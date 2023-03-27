@@ -1,12 +1,12 @@
 from django.contrib import admin
-from .models import BC_TO_YC, YC_TO_BC
+from .models import BpToYc, YcToBp
 
-class BC_TO_YC_Admin(admin.ModelAdmin):
-    list_display = ['type_proc', 'id_YL', 'id_DOLJNOSTI']
+class BpToYcAdmin(admin.ModelAdmin):
+    list_display = ['idYL', 'idPos', 'tabNum']
 
-class YC_TO_BC_Admin(admin.ModelAdmin):
-    list_display = ['type_proc', 'TAB', 'code_study']
+class YcToBpAdmin(admin.ModelAdmin):
+    list_display = ['operationType', 'tabNum', 'courseCost']
 
 
-admin.site.register(BC_TO_YC, BC_TO_YC_Admin)
-admin.site.register(YC_TO_BC, YC_TO_BC_Admin)
+admin.site.register(BpToYc, BpToYcAdmin)
+admin.site.register(YcToBp, YcToBpAdmin)

@@ -1,13 +1,56 @@
 from django.db import models
 
 
-class BC_TO_YC(models.Model):
-    type_proc = models.CharField(max_length=255)
-    id_YL = models.CharField(max_length=255)
-    id_DOLJNOSTI = models.CharField(max_length=255)
+class BpToYc(models.Model):
+    operationType = models.CharField(max_length=255)
+    idYL = models.CharField(max_length=255)
+    idPos = models.CharField(max_length=255)
+    posName = models.CharField(max_length=255)
+    birthday = models.CharField(max_length=255)
+    tabNum = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255)
+    SNILS = models.CharField(max_length=255)
+    dateEmployment = models.CharField(max_length=255)
+    dateStartPos = models.CharField(max_length=255)
+    edu = models.CharField(max_length=255)
+    dateStartEdu = models.CharField(max_length=255)
+    dateEndEdu = models.CharField(max_length=255)
+    eduInst = models.CharField(max_length=255)
+    serialDoc = models.CharField(max_length=255)
+    numDoc = models.CharField(max_length=255)
+    dateDoc = models.CharField(max_length=255)
+    PFM = models.CharField(max_length=255)
+    depName = models.CharField(max_length=255)
+    timeZone = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
+    email = models.CharField(max_length=255)
+    learnCode = models.CharField(max_length=255)
+    dateStartLearn = models.CharField(max_length=255)
+    foto = models.FileField(upload_to='', null=True, blank=True, verbose_name="Фото")
 
 
-class YC_TO_BC(models.Model):
-    type_proc = models.CharField(max_length=255)
-    TAB = models.CharField(max_length=255)
-    code_study = models.CharField(max_length=255)
+class YcToBp(models.Model):
+    operationType = models.CharField(max_length=255)
+    tabNum = models.CharField(max_length=255)
+    learnCode = models.CharField(max_length=255)
+    courseCost = models.CharField(max_length=255)
+    eduName = models.CharField(max_length=255)
+    eduTime = models.CharField(max_length=255)
+    eduUrl = models.CharField(max_length=255)
+    eduStatus = models.CharField(max_length=255)
+    result = models.CharField(max_length=255)
+    protocol = models.FileField(upload_to='', null=True, blank=True, verbose_name='Протокол')
+    protocolNum = models.CharField(max_length=255)
+    protocolDate = models.CharField(max_length=255)
+    memberId1 = models.CharField(max_length=255)
+    memberId2 = models.CharField(max_length=255)
+    memberId3 = models.CharField(max_length=255)
+    cert = models.FileField(upload_to='', null=True, blank=True, verbose_name="Удостоверение")
+    certDate = models.CharField(max_length=255)
+    certNum = models.CharField(max_length=255)
+    FGISNum = models.CharField(max_length=255)
+    platformStatus = models.CharField(max_length=255)
+
+
+# class FileClass(models.Model):
+#     file = models.FileField(upload_to='', null=True, blank=True, verbose_name="Файл")
