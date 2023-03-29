@@ -21,13 +21,12 @@ class CreateListModelMixin(object):
 class BC_TO_YC_ViewSet(CreateListModelMixin, viewsets.ModelViewSet):
     queryset = BpToYc.objects.all()
     serializer_class = BpToYcSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
 class YC_TO_BC_ViewSet(CreateListModelMixin, viewsets.ModelViewSet):
     queryset = YcToBp.objects.all()
     serializer_class = YcToBpSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class FileUploadView(views.APIView):
