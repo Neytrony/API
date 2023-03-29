@@ -9,12 +9,9 @@ class BpToYcSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         defaults = {}
-        print(validated_data)
         for key, value in validated_data.items():
             if key != 'SNILS':
                 defaults[key] = value
-
-        print(defaults)
         answer, created = BpToYc.objects.update_or_create(SNILS=validated_data['SNILS'], defaults=defaults)
         return answer
 
