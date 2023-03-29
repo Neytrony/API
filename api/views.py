@@ -1,10 +1,9 @@
 from django.core.files.storage import FileSystemStorage
 from rest_framework import viewsets, permissions, status, views
-from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-from rest_framework.viewsets import GenericViewSet
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import BpToYc, YcToBp
 from .serializers import BpToYcSerializer, YcToBpSerializer
@@ -22,12 +21,16 @@ class BC_TO_YC_ViewSet(CreateListModelMixin, viewsets.ModelViewSet):
     queryset = BpToYc.objects.all()
     serializer_class = BpToYcSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['SNILS', 'dateStartLearn']
+
 
 class YC_TO_BC_ViewSet(CreateListModelMixin, viewsets.ModelViewSet):
     queryset = YcToBp.objects.all()
     serializer_class = YcToBpSerializer
     permission_classes = [permissions.IsAuthenticated]
-
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['tabNum', 'eduStatus', 'platformStatus']
 
 class FileUploadView(views.APIView):
     parser_classes = (FileUploadParser,)
