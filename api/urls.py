@@ -1,6 +1,6 @@
 from rest_framework import routers, permissions
 from django.urls import path, include
-from .views import BC_TO_YC_ViewSet, YC_TO_BC_ViewSet, FileUploadView
+from .views import BC_TO_YC_ViewSet, YC_TO_BC_ViewSet, FileUploadView, getFile
 from rest_framework import routers, permissions
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView,)
 
@@ -14,4 +14,5 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('v1/upload/', FileUploadView.as_view(), name='file'),
+    path('v1/download/', getFile.as_view(), name='download_file'),
 ]

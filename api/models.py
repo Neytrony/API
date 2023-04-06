@@ -52,7 +52,3 @@ class YcToBp(models.Model):
     certNum = models.CharField(max_length=255)
     FGISNum = models.CharField(max_length=255)
     platformStatus = models.CharField(max_length=255)
-
-
-# class FileClass(models.Model):
-#     file = models.FileField(upload_to='', null=True, blank=True, verbose_name="Файл")
