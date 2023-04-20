@@ -27,7 +27,7 @@ class BpToYc(models.Model):
     email = models.CharField(max_length=255, null=True, blank=True)
     learnCode = models.CharField(max_length=255, null=True, blank=True)
     dateStartLearn = models.CharField(max_length=255, null=True, blank=True)
-    foto = models.FileField(upload_to='', null=True, blank=True, verbose_name="Фото")
+    foto = models.ImageField(upload_to='', null=True, blank=True, verbose_name="Фото")
 
 
 class YcToBp(models.Model):

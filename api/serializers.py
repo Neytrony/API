@@ -1,8 +1,15 @@
+import os
 from rest_framework import serializers
+from djangoProject import settings
+from drf_base64.serializers import ModelSerializer
+from drf_extra_fields.fields import Base64ImageField
 from .models import BpToYc, YcToBp
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+MEDIA_ROOT = settings.MEDIA_ROOT
 
-class BpToYcSerializer(serializers.ModelSerializer):
+
+class BpToYcSerializer(ModelSerializer):
+    foto = Base64ImageField()
+
     class Meta:
         model = BpToYc
         fields = '__all__'
@@ -10,11 +17,11 @@ class BpToYcSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         duble = BpToYc.objects.filter(SNILS=validated_data['SNILS'], edu=validated_data['learnCode'], dateStartEdu=validated_data['dateStartLearn'])
         if duble.exists():
-            duble.update(**validated_data)
-            return BpToYc.objects.filter(SNILS=validated_data['SNILS'], edu=validated_data['learnCode'], dateStartEdu= validated_data['dateStartLearn']).first()
+            instance = duble.first()
         else:
-            return BpToYc.objects.create(**validated_data)
+            instance = BpToYc()
 
+        return Bp_To_Yc_cteate_or_update(instance, validated_data)
 
 
 class YcToBpSerializer(serializers.ModelSerializer):
@@ -32,5 +39,23 @@ class YcToBpSerializer(serializers.ModelSerializer):
         return instance
 
 
-class FileSerializer(serializers.Serializer):
-    file = serializers.FileField()
+def Bp_To_Yc_cteate_or_update(instance, validated_data):
+    filename = validated_data['tabNum'] + '_' + validated_data['learnCode'] + '_' + validated_data['dateStartLearn']
+    for key, value in validated_data.items():
+        if key == 'foto':
+            removeOldFoto(instance.foto)
+        setattr(instance, key, value)
+    instance.save()
+    oldName = instance.foto
+    newName = os.path.dirname(oldName.path) + '/' + filename + '.' + oldName.name.split('.')[-1]
+    os.rename(oldName.path, newName)
+    instance.foto = newName
+    instance.save()
+    return instance
+
+
+def removeOldFoto(filename):
+    try:
+        os.remove(f'{MEDIA_ROOT}/{filename}')
+    except BaseException:
+        pass
