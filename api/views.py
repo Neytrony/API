@@ -2,7 +2,7 @@ from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
 from rest_framework import viewsets, permissions, status, views
 from rest_framework.mixins import ListModelMixin
-from rest_framework.parsers import FileUploadParser
+from rest_framework.parsers import FileUploadParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from django_filters.rest_framework import DjangoFilterBackend
@@ -10,7 +10,7 @@ from django.core.files import File
 from django.db.models import Q
 
 from .models import BpToYc, YcToBp
-from .serializers import BpToYcSerializer, YcToBpSerializer
+from .serializers import BpToYcSerializer, YcToBpSerializer, FileSerializer
 
 
 class CreateListModelMixin(object):
@@ -99,31 +99,15 @@ class getFile(views.APIView):
         response['Content-Disposition'] = f'attachment; filename="{fileName}"'
         return response
 
-class FileUploadView(views.APIView):
-    parser_classes = (FileUploadParser,)
+class FileUploadView(viewsets.ViewSet):
+    parser_classes = (MultiPartParser,)
 
-    def get(self, request):
-        snils  = self.kwargs['snils']
-        print(snils)
-        # file = open('/home/user/Ссылка.txt', 'rb')
-        # response = HttpResponse(File(file), content_type='application/force-download')
-        # response['Content-Disposition'] = 'attachment; filename="%s"' % 'Ссылка.txt'
-        # return response
-
-        return Response(f'File: {file.name} successfully uploaded!', status=HTTP_200_OK)
-
-
-    def post(self, request,  format=None):
-        file_obj = request.FILES['file']
-        FileSystemStorage().save(file_obj.name, file_obj)
-        # do some stuff with uploaded file
-        return Response(status=204)
-
-    def put(self, request):
-        file = request.data.get('file', None)
-
-        if file is not None:
-            FileSystemStorage().save(f'{file.name}', file)
-            return Response(f'File: {file.name} successfully uploaded!', status=HTTP_200_OK)
+    def create(self, request):
+        serializer_class = FileSerializer(data=request.data)
+        if 'file' not in request.FILES or not serializer_class.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(f'File not found!', status=HTTP_400_BAD_REQUEST)
+            files = request.FILES.getlist('file')
+            for file in files:
+                FileSystemStorage().save(file.name, file)
+            return Response(status=status.HTTP_201_CREATED)

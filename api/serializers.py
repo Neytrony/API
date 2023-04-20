@@ -8,12 +8,13 @@ class BpToYcSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        defaults = {}
-        for key, value in validated_data.items():
-            if key != 'SNILS':
-                defaults[key] = value
-        answer, created = BpToYc.objects.update_or_create(SNILS=validated_data['SNILS'], defaults=defaults)
-        return answer
+        duble = BpToYc.objects.filter(SNILS=validated_data['SNILS'], edu=validated_data['learnCode'], dateStartEdu=validated_data['dateStartLearn'])
+        if duble.exists():
+            duble.update(**validated_data)
+            return BpToYc.objects.filter(SNILS=validated_data['SNILS'], edu=validated_data['learnCode'], dateStartEdu= validated_data['dateStartLearn']).first()
+        else:
+            return BpToYc.objects.create(**validated_data)
+
 
 
 class YcToBpSerializer(serializers.ModelSerializer):
@@ -23,3 +24,13 @@ class YcToBpSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return YcToBp.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        return instance
+
+
+class FileSerializer(serializers.Serializer):
+    file = serializers.FileField()
