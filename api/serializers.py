@@ -4,11 +4,15 @@ from djangoProject import settings
 from drf_base64.serializers import ModelSerializer
 from drf_extra_fields.fields import Base64ImageField
 from .models import BpToYc, YcToBp
+from djangoProject.s3_storage import MediaStorage
+import imghdr
+
+
 MEDIA_ROOT = settings.MEDIA_ROOT
 
 
 class BpToYcSerializer(ModelSerializer):
-    foto = Base64ImageField()
+    foto = Base64ImageField(required=False)
 
     class Meta:
         model = BpToYc
@@ -40,16 +44,14 @@ class YcToBpSerializer(serializers.ModelSerializer):
 
 
 def Bp_To_Yc_cteate_or_update(instance, validated_data):
-    filename = validated_data['tabNum'] + '_' + validated_data['learnCode'] + '_' + validated_data['dateStartLearn']
     for key, value in validated_data.items():
         if key == 'foto':
             removeOldFoto(instance.foto)
-        setattr(instance, key, value)
-    instance.save()
-    oldName = instance.foto
-    newName = os.path.dirname(oldName.path) + '/' + filename + '.' + oldName.name.split('.')[-1]
-    os.rename(oldName.path, newName)
-    instance.foto = newName
+            filename = validated_data['tabNum'] + '_' + validated_data['learnCode'] + '_' + validated_data['dateStartLearn'] + '.' + imghdr.what(value)
+            file = MediaStorage().save(filename, value)
+            instance.foto = file
+        else:
+            setattr(instance, key, value)
     instance.save()
     return instance
 
