@@ -1,4 +1,5 @@
 import os
+from django.core.files.storage import FileSystemStorage
 from rest_framework import serializers
 from djangoProject import settings
 from drf_base64.serializers import ModelSerializer
@@ -48,7 +49,8 @@ def Bp_To_Yc_cteate_or_update(instance, validated_data):
         if key == 'foto':
             removeOldFoto(instance.foto)
             filename = validated_data['tabNum'] + '_' + validated_data['learnCode'] + '_' + validated_data['dateStartLearn'] + '.' + imghdr.what(value)
-            file = MediaStorage().save(filename, value)
+            # file = MediaStorage().save(filename, value)
+            file = FileSystemStorage().save(filename, value)
             instance.foto = file
         else:
             setattr(instance, key, value)
