@@ -1,8 +1,12 @@
 import json
 import base64
 
+from django.conf import settings
 from django.db import models
+from djangoProject.s3_storage import MediaStorage
 
+media_storage = MediaStorage()
+MEDIA_ROOT = settings.MEDIA_ROOT
 
 class Base64Encoder(json.JSONEncoder):
     def default(self, o):
@@ -40,6 +44,18 @@ class BpToYc(models.Model):
     foto = models.ImageField(upload_to='', null=True, blank=True, verbose_name="Фото")
 
     def serializer(self):
+        if self.foto:
+            fotoName = self.foto.name
+            fotoPath = f'https://apiuc.hb.bizmrg.com/{MEDIA_ROOT}/{self.foto}'
+            try:
+                S3_foto = media_storage.open(self.foto.name, 'rb')
+                fotoBase64 = json.dumps(S3_foto.read(), cls=Base64Encoder)[1:-1]
+            except BaseException:
+                fotoBase64 = "Не удалось преобразовать файл"
+        else:
+            fotoName = ''
+            fotoPath = ''
+            fotoBase64 = ''
         return {
             'id': self.id,
             'operationType': self.operationType,
@@ -67,9 +83,9 @@ class BpToYc(models.Model):
             'email': self.email,
             'learnCode': self.learnCode,
             'dateStartLearn': self.dateStartLearn,
-            'fotoName': self.foto.name,
-            'fotoPath': f'https://apiuc.hb.bizmrg.com/{self.foto.url}',
-            'foto': json.dumps(open(self.foto.path, 'rb').read(), cls=Base64Encoder)[1:-1],
+            'fotoName': fotoName,
+            'fotoPath': fotoPath,
+            'foto': fotoBase64,
         }
 
     def __str__(self):
@@ -77,7 +93,8 @@ class BpToYc(models.Model):
 
 
 class YcToBp(models.Model):
-    bp_to_yc = models.OneToOneField(BpToYc, on_delete=models.CASCADE, primary_key=True, related_name='yc_to_bp')
+    id = models.AutoField(primary_key=True)
+    bp_to_yc = models.OneToOneField(BpToYc, on_delete=models.CASCADE, related_name='yc_to_bp')
     operationType = models.CharField(max_length=255)
     tabNum = models.CharField(max_length=255)
     FIO = models.CharField(max_length=255, null=True)
@@ -103,23 +120,30 @@ class YcToBp(models.Model):
     def serializer(self):
         if self.protocol:
             protocolName = self.protocol.name
-            protocolPath = f'https://apiuc.hb.bizmrg.com/{self.protocol.path}'
-            protocolBase64 = json.dumps(open(self.protocol.path, 'rb').read(), cls=Base64Encoder)[1:-1]
+            protocolPath = f'https://apiuc.hb.bizmrg.com/{self.protocol}'
+            try:
+                S3_protocol = media_storage.open(self.protocol.name, 'rb')
+                protocolBase64 = json.dumps(S3_protocol.read(), cls=Base64Encoder)[1:-1]
+            except BaseException:
+                protocolBase64 = "Не удалось преобразовать файл"
         else:
             protocolName = ''
             protocolPath = ''
             protocolBase64 = ''
         if self.cert:
             certName = self.cert.name
-            certPath = f'https://apiuc.hb.bizmrg.com/{self.cert.path}'
-            certBase64 = json.dumps(open(self.cert.path, 'rb').read(), cls=Base64Encoder)[1:-1]
+            certPath = f'https://apiuc.hb.bizmrg.com/{self.cert}'
+            try:
+                S3_cert = media_storage.open(self.cert.name, 'rb')
+                certBase64 = json.dumps(S3_cert.read(), cls=Base64Encoder)[1:-1]
+            except BaseException:
+                certBase64 = "Не удалось преобразовать файл"
         else:
             certName = ''
             certPath = ''
             certBase64 = ''
 
         return {
-            'input_model': self.bp_to_yc.serializer(),
             'operationType': self.operationType,
             'tabNum': self.tabNum,
             'FIO': self.FIO,
@@ -144,5 +168,5 @@ class YcToBp(models.Model):
             'certDate': self.certDate,
             'certNum': self.certNum,
             'FGISNum': self.FGISNum,
-
+            'platformStatus': self.platformStatus
         }
