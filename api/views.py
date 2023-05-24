@@ -5,8 +5,8 @@ from rest_framework import viewsets, permissions, views
 from django.db.models import Q
 from rest_framework.response import Response
 
-from .models import BpToYc, YcToBp
-from .serializers import BpToYcSerializer, YcToBpSerializer
+from .models import BpToYc, YcToBp, Base64Encoder
+from .serializers import BpToYcSerializer, YcToBpSerializer, Bp_To_Yc_cteate_or_update
 
 
 class CreateListModelMixin(object):
@@ -15,13 +15,6 @@ class CreateListModelMixin(object):
         if isinstance(kwargs.get('data', {}), list):
             kwargs['many'] = True
         return super(CreateListModelMixin, self).get_serializer(*args, **kwargs)
-
-
-class Base64Encoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, bytes):
-            return base64.b64encode(o).decode()
-        return json.JSONEncoder.default(self, o)
 
 
 class BC_TO_YC_ViewSet(CreateListModelMixin, viewsets.ModelViewSet):
@@ -76,21 +69,7 @@ class BpToYcAPIView(views.APIView):
 
     def get(self, request):
         queryset = self.get_queryset()
-        print(queryset)
-        response = []
-        for elem in queryset:
-            attrs = [attr for attr in elem.__dict__.keys() if not attr.startswith('_') and not attr == 'id']
-            obj_dict = dict()
-            for attr in attrs:
-                if attr != 'foto':
-                    obj_dict[attr] = elem.__getattribute__(attr)
-                else:
-                    foto = elem.__getattribute__(attr)
-                    obj_dict['fotoName'] = foto.name
-                    obj_dict['fotoPath'] = foto.path
-                    obj_dict[attr] = json.dumps(open(foto.path, 'rb').read(), cls=Base64Encoder)[1:-1]
-            response.append(obj_dict)
-        return Response(response)
+        return Response([obj.serializer() for obj in queryset])
 
     def get_queryset(self):
         queryset = BpToYc.objects.all()
@@ -100,26 +79,44 @@ class BpToYcAPIView(views.APIView):
             new_key = f'{key}__in'
             my_dict[new_key] = value
         queryset = queryset.filter(Q(**my_dict))
-        #
-        # tabNum = query_params_dict.get('tabNum')
-        # eduInst = query_params_dict.get('eduInst')
-        # platformStatus = query_params_dict.get('platformStatus')
-        # if tabNum is not None and eduInst is not None and platformStatus is not None:
-        #     queryset = queryset.filter(
-        #         Q(tabNum__in=tabNum) & Q(eduInst__in=eduInst) & Q(platformStatus__in=platformStatus))
-        # elif tabNum is None and eduInst is not None and platformStatus is not None:
-        #     queryset = queryset.filter(Q(eduInst__in=eduInst) & Q(platformStatus__in=platformStatus))
-        # elif tabNum is not None and eduInst is None and platformStatus is not None:
-        #     queryset = queryset.filter(Q(tabNum__in=tabNum) & Q(platformStatus__in=platformStatus))
-        # elif tabNum is not None and eduInst is not None and platformStatus is None:
-        #     queryset = queryset.filter(Q(tabNum__in=tabNum) & Q(eduInst__in=eduInst))
-        # elif tabNum is not None and eduInst is None and platformStatus is None:
-        #     queryset = queryset.filter(Q(tabNum__in=tabNum))
-        # elif tabNum is None and eduInst is not None and platformStatus is None:
-        #     queryset = queryset.filter(Q(eduInst__in=eduInst))
-        # elif tabNum is None and eduInst is None and platformStatus is not None:
-        #     queryset = queryset.filter(Q(platformStatus__in=platformStatus))
         return queryset
+
+    def post(self, request):
+        data = request.data
+        result = []
+        count = 0
+        for validated_data in data:
+            count += 1
+            duble = BpToYc.objects.filter(SNILS=validated_data['SNILS'], learnCode=validated_data['learnCode'],
+                                          dateStartLearn=validated_data['dateStartLearn'])
+            if duble.exists():
+                instance = duble.first()
+            else:
+                instance = BpToYc.objects.create()
+                YcToBp.objects.create(bp_to_yc=instance)
+            result.append(Bp_To_Yc_cteate_or_update(instance, validated_data))
+        return Response([res.serializer() for res in result])
+
+
+class YcToBpAPIView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        queryset = self.get_queryset()
+        print(queryset)
+        return Response([obj.serializer() for obj in queryset])
+
+    def get_queryset(self):
+        queryset = YcToBp.objects.all()
+        query_params_dict = dict(self.request.query_params.lists())
+        my_dict = dict()
+        for key, value in query_params_dict.items():
+            new_key = f'{key}__in'
+            my_dict[new_key] = value
+        queryset = queryset.filter(Q(**my_dict))
+        return queryset
+
+
 
 # class getFile(views.APIView):
 #     parser_classes = (FileUploadParser,)

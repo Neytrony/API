@@ -79,22 +79,22 @@ WSGI_APPLICATION = 'djangoProject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'PostgreSQL-4382',
-        'USER': 'postgres',
-        'PASSWORD': 'EJXUK2V9yTgMQGe42kWe9X2nTj6kjTRjvvPc',
-        'HOST': '5.188.143.227',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'PostgreSQL-4382',
+#         'USER': 'postgres',
+#         'PASSWORD': 'EJXUK2V9yTgMQGe42kWe9X2nTj6kjTRjvvPc',
+#         'HOST': '5.188.143.227',
+#         'PORT': '5432',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -135,7 +135,7 @@ STATIC_URL = 'static/'
 
 # Uploaded/download files export
 MEDIA_ROOT = os.path.join(CORE_DIR, 'mediafiles')
-MEDIA_URL = '/mediafiles/'
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -161,10 +161,10 @@ SIMPLE_JWT = {
 }
 
 # S3 STORAGE SETTINGS
-DEFAULT_FILE_STORAGE = 'djangoProject.s3_storage.MediaStorage'
-
-AWS_S3_ENDPOINT_URL = 'https://hb.bizmrg.com'
-AWS_S3_ACCESS_KEY_ID = 'moFTX9kqbXzWirxUe7woGK'
-AWS_S3_SECRET_ACCESS_KEY = 'bS5zaX5hj4PSdV13ajEgJh57UgckSVK2SJCYKEKNpMad'
-AWS_DEFAULT_ACL = None
-AWS_QUERYSTRING_AUTH = False
+# DEFAULT_FILE_STORAGE = 'djangoProject.s3_storage.MediaStorage'
+#
+# AWS_S3_ENDPOINT_URL = 'https://hb.bizmrg.com'
+# AWS_S3_ACCESS_KEY_ID = 'moFTX9kqbXzWirxUe7woGK'
+# AWS_S3_SECRET_ACCESS_KEY = 'bS5zaX5hj4PSdV13ajEgJh57UgckSVK2SJCYKEKNpMad'
+# AWS_DEFAULT_ACL = None
+# AWS_QUERYSTRING_AUTH = False

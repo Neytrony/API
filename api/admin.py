@@ -2,11 +2,17 @@ from django.contrib import admin
 from .models import BpToYc, YcToBp
 
 class BpToYcAdmin(admin.ModelAdmin):
-    list_display = ['idYL', 'idPos', 'tabNum']
+    list_display = ['SNILS', 'learnCode', 'dateStartLearn']
+
 
 class YcToBpAdmin(admin.ModelAdmin):
-    list_display = ['operationType', 'tabNum', 'courseCost']
+    list_display = ['SNILS', 'learnCode', 'dateStartLearn']
 
+    def SNILS(self, obj):
+        return obj.bp_to_yc.SNILS
+
+    def dateStartLearn(self, obj):
+        return obj.bp_to_yc.dateStartLearn
 
 admin.site.register(BpToYc, BpToYcAdmin)
 admin.site.register(YcToBp, YcToBpAdmin)

@@ -1,4 +1,7 @@
+import base64
 import os
+
+from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from rest_framework import serializers
 from djangoProject import settings
@@ -20,12 +23,13 @@ class BpToYcSerializer(ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        duble = BpToYc.objects.filter(SNILS=validated_data['SNILS'], edu=validated_data['learnCode'], dateStartEdu=validated_data['dateStartLearn'])
+        duble = BpToYc.objects.filter(SNILS=validated_data['SNILS'], learnCode=validated_data['learnCode'],
+                                      dateStartLearn=validated_data['dateStartLearn'])
         if duble.exists():
             instance = duble.first()
         else:
-            instance = BpToYc()
-
+            instance = BpToYc.objects.create()
+            YcToBp.objects.create(bp_to_yc=instance)
         return Bp_To_Yc_cteate_or_update(instance, validated_data)
 
 
@@ -45,15 +49,21 @@ class YcToBpSerializer(serializers.ModelSerializer):
 
 
 def Bp_To_Yc_cteate_or_update(instance, validated_data):
+    extra_fields = ['operationType', 'FIO', 'tabNum', 'learnCode']
     for key, value in validated_data.items():
         if key == 'foto':
             removeOldFoto(instance.foto)
-            filename = validated_data['tabNum'] + '_' + validated_data['learnCode'] + '_' + validated_data['dateStartLearn'] + '.' + imghdr.what(value)
-            # file = MediaStorage().save(filename, value)
-            file = FileSystemStorage().save(filename, value)
+            decoded_value = base64.b64decode(value)
+            filename = validated_data['tabNum'] + '_' + validated_data['learnCode'] + '_' + validated_data['dateStartLearn'] + '.' + imghdr.what('', decoded_value)
+            file = MediaStorage().save(filename, ContentFile(decoded_value, name=filename))
+            # file = FileSystemStorage().save(filename, ContentFile(decoded_value, name=filename))
             instance.foto = file
+        elif key in extra_fields:
+            setattr(instance, key, value)
+            setattr(instance.yc_to_bp, key, value)
         else:
             setattr(instance, key, value)
+    instance.yc_to_bp.save()
     instance.save()
     return instance
 
