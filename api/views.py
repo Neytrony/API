@@ -93,7 +93,7 @@ class BpToYcAPIView(views.APIView):
                 instance = duble.first()
             else:
                 instance = BpToYc.objects.create()
-                YcToBp.objects.create(bp_to_yc=instance)
+                YcToBp.objects.create(bp_to_yc=instance, eduStatus="Добавлено", platformStatus="Добавлено")
             result.append(Bp_To_Yc_cteate_or_update(instance, validated_data))
         return Response([res.serializer() for res in result])
 
