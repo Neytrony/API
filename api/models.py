@@ -144,6 +144,7 @@ class YcToBp(models.Model):
             certBase64 = ''
 
         return {
+            'id': self.id,
             'operationType': self.operationType,
             'tabNum': self.tabNum,
             'FIO': self.FIO,
