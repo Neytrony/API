@@ -1,0 +1,30 @@
+[2023-07-05 13:56:45,184: ERROR/MainProcess] consumer: Cannot connect to redis://redis:6379/0: Error 111 connecting to redis:6379. Connection refused..
+Trying again in 2.00 seconds... (1/100)
+
+[2023-07-05 17:03:33,482: ERROR/ForkPoolWorker-1] Task web_part.tasks.update_info[9d976456-3b96-4351-ab77-1b33ad9a3c61] raised unexpected: FileNotFoundError(2, 'No such file or directory')
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/celery/app/trace.py", line 477, in trace_task
+    R = retval = fun(*args, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/celery/app/trace.py", line 760, in __protected_call__
+    return self.run(*args, **kwargs)
+  File "/usr/src/app/web_part/tasks.py", line 6, in update_info
+    with open('test') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'test'
+[2023-07-05 17:09:02,366: ERROR/ForkPoolWorker-1] Task web_part.tasks.update_info[3523b24e-9e59-42b9-a487-ace7cb6e5349] raised unexpected: FileNotFoundError(2, 'No such file or directory')
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/celery/app/trace.py", line 477, in trace_task
+    R = retval = fun(*args, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/celery/app/trace.py", line 760, in __protected_call__
+    return self.run(*args, **kwargs)
+  File "/usr/src/app/web_part/tasks.py", line 6, in update_info
+    with open('test') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'test'
+[2023-07-05 17:09:08,796: ERROR/ForkPoolWorker-1] Task web_part.tasks.update_info[0a571fc1-0d84-4ebd-b39a-5e4e44508913] raised unexpected: FileNotFoundError(2, 'No such file or directory')
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/celery/app/trace.py", line 477, in trace_task
+    R = retval = fun(*args, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/celery/app/trace.py", line 760, in __protected_call__
+    return self.run(*args, **kwargs)
+  File "/usr/src/app/web_part/tasks.py", line 6, in update_info
+    with open('test') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'test'
