@@ -3,7 +3,7 @@ from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from web_part.tasks import update_info
+from web_part.tasks import update_info, get_info_csv
 # Create your views here.
 
 
@@ -32,14 +32,22 @@ def file_upload(request):
         # Загрузка и сохранение файла
         try:
             uploaded_file = request.FILES['myfile']
-            # FileSystemStorage().save(uploaded_file.name, uploaded_file)
-            # Распаковка архива и обработка файлов из него
+            FileSystemStorage().save(uploaded_file.name, uploaded_file)
+            # Распаковка аdрхива и обработка файлов из него
             update_info.delay(uploaded_file.name)
             request.session['message'] = 'Началась обработка файла'
         except BaseException:
             request.session['message'] = 'Ошибка. Файл не выбран'
     return HttpResponseRedirect('/')
 
+
+def file_export(request):
+    try:
+        get_info_csv.delay()
+        request.session['message'] = 'Началась обработка файла'
+    except BaseException:
+        request.session['message'] = 'Ошибка.'
+    return HttpResponseRedirect('/')
 
 
 
