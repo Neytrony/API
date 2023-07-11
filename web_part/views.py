@@ -3,7 +3,7 @@ from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from web_part.tasks import update_info, get_info_csv
+from web_part.tasks import update_info, get_info_csv, get_info_xlsx
 # Create your views here.
 
 
@@ -41,7 +41,7 @@ def file_upload(request):
     return HttpResponseRedirect('/')
 
 
-def file_export(request):
+def file_export_csv(request):
     try:
         get_info_csv.delay()
         request.session['message'] = 'Началась обработка файла'
@@ -50,5 +50,13 @@ def file_export(request):
     return HttpResponseRedirect('/')
 
 
+
+def file_export_xlsx(request):
+    try:
+        get_info_xlsx.delay()
+        request.session['message'] = 'Началась обработка файла'
+    except BaseException:
+        request.session['message'] = 'Ошибка.'
+    return HttpResponseRedirect('/')
 
 
