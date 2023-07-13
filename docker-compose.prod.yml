@@ -1,0 +1,65 @@
+version: "3.8"
+
+services:
+  api-app:
+    platform: linux/amd64
+    container_name: api-app-prod
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+      - media_volume:/home/app/web/mediafiles
+    expose:
+      - 8000
+    env_file:
+      - ./.env.prod
+
+  nginx:
+    platform: linux/amd64
+    build: ./nginx
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+      - media_volume:/home/app/web/mediafiles
+    ports:
+      - 1337:80
+    depends_on:
+      - api-app
+  celery:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: celery -A djangoProject worker --concurrency=1 --loglevel=error --logfile=mediafiles/logs/celery.log
+    volumes:
+      - media_volume:/home/app/web/mediafiles
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - api-app
+      - redis
+
+  redis:
+    image: redis:7-alpine
+
+  dashboard:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: celery -A djangoProject --broker=redis://redis:6379/0 flower --port=5555
+    ports:
+      - 5555:5555
+    env_file:
+      - ./.env.prod
+
+    depends_on:
+      - api-app
+      - redis
+      - celery
+
+volumes:
+  static_volume:
+  media_volume:
