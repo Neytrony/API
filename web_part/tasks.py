@@ -1,9 +1,7 @@
 import csv
-import time
 from openpyxl import Workbook, load_workbook
 from djangoProject.celery import app
 from api.models import YcToBp
-from web_part.decorators import log_clearMediaDirs
 
 
 YcToBpDict = {
@@ -32,9 +30,6 @@ YcToBpDict = {
 }
 
 
-
-
-
 @app.task
 def update_info(filename):
     ext = filename.split('.')[-1]
@@ -43,7 +38,6 @@ def update_info(filename):
         csv_update(full_path)
     elif ext == 'xlsx' or ext == 'xls':
         xlsx_update(full_path)
-
 
 
 def csv_update(filename):
@@ -118,8 +112,6 @@ def get_info_xlsx(filename):
             sheet.cell(row=row, column=col, value=value)
         row += 1
     book.save(f'mediafiles/export/{filename}')
-
-
 
 
 # excelData = xlrd.open_workbook(file)

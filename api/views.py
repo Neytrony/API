@@ -1,11 +1,7 @@
-import base64
-import json
-
 from rest_framework import viewsets, permissions, views
 from django.db.models import Q
 from rest_framework.response import Response
-
-from .models import BpToYc, YcToBp, Base64Encoder
+from .models import BpToYc, YcToBp
 from .serializers import BpToYcSerializer, YcToBpSerializer, Bp_To_Yc_cteate_or_update
 
 
@@ -114,7 +110,6 @@ class YcToBpAPIView(views.APIView):
             my_dict[new_key] = value
         queryset = queryset.filter(Q(**my_dict))
         return queryset
-
 
 
 # class getFile(views.APIView):

@@ -1,7 +1,6 @@
-from rest_framework import routers, permissions
 from django.urls import path, include
-from .views import BC_TO_YC_ViewSet, YC_TO_BC_ViewSet, BpToYcAPIView, YcToBpAPIView
-from rest_framework import routers, permissions
+from .views import BpToYcAPIView, YcToBpAPIView
+from rest_framework import routers
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView,)
 
 router = routers.DefaultRouter()

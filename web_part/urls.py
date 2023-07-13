@@ -1,5 +1,4 @@
-from rest_framework import routers, permissions
-from django.urls import path, include
+from django.urls import path
 from web_part.views import MainPage, file_import, file_export_csv, file_export_xlsx
 
 

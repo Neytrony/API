@@ -2,7 +2,6 @@ import base64
 import os
 
 from django.core.files.base import ContentFile
-from django.core.files.storage import FileSystemStorage
 from rest_framework import serializers
 from djangoProject import settings
 from drf_base64.serializers import ModelSerializer
