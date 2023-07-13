@@ -21,7 +21,7 @@ CORE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-65e(%(lg&#&fxs3n*1t%^+9#d5_y1%dq#xz_ckmsc+kr-u1zac'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-65e(%(lg&#&fxs3n*1t%^+9#d5_y1%dq#xz_ckmsc+kr-u1zac')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -80,22 +80,22 @@ WSGI_APPLICATION = 'djangoProject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'PostgreSQL-4382',
-#         'USER': 'postgres',
-#         'PASSWORD': 'EJXUK2V9yTgMQGe42kWe9X2nTj6kjTRjvvPc',
-#         'HOST': '5.188.143.227',
-#         'PORT': '5432',
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+DATABASES = {
+    'default': {
+        'ENGINE':  os.environ.get('SECRET_KEY', 'django.db.backends.sqlite3'),
+        'NAME': os.environ.get('NAME', BASE_DIR / 'db.sqlite3'),
+        'USER': os.environ.get('USER', None),
+        'PASSWORD': os.environ.get('PASSWORD', None),
+        'HOST': os.environ.get('HOST', None),
+        'PORT': os.environ.get('PORT', None),
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -168,13 +168,12 @@ SIMPLE_JWT = {
 }
 
 # S3 STORAGE SETTINGS
-# DEFAULT_FILE_STORAGE = 'djangoProject.s3_storage.MediaStorage'
-#
-# AWS_S3_ENDPOINT_URL = 'https://hb.bizmrg.com'
-# AWS_S3_ACCESS_KEY_ID = 'moFTX9kqbXzWirxUe7woGK'
-# AWS_S3_SECRET_ACCESS_KEY = 'bS5zaX5hj4PSdV13ajEgJh57UgckSVK2SJCYKEKNpMad'
-# AWS_DEFAULT_ACL = None
-# AWS_QUERYSTRING_AUTH = False
+DEFAULT_FILE_STORAGE = 'djangoProject.s3_storage.MediaStorage'
+AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL', None),
+AWS_S3_ACCESS_KEY_ID = os.environ.get('AWS_S3_ACCESS_KEY_ID', None),
+AWS_S3_SECRET_ACCESS_KEY = os.environ.get('AWS_S3_SECRET_ACCESS_KEY', None),
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = False
 
 
 ##############################################################
