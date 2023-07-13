@@ -55,8 +55,8 @@ def Bp_To_Yc_cteate_or_update(instance, validated_data):
             removeOldFoto(instance.foto)
             decoded_value = base64.b64decode(value)
             filename = validated_data['tabNum'] + '_' + validated_data['learnCode'] + '_' + validated_data['dateStartLearn'] + '.' + imghdr.what('', decoded_value)
-            # file = MediaStorage().save(filename, ContentFile(decoded_value, name=filename))
-            file = FileSystemStorage().save(filename, ContentFile(decoded_value, name=filename))
+            file = MediaStorage().save(filename, ContentFile(decoded_value, name=filename))
+            # file = FileSystemStorage().save(filename, ContentFile(decoded_value, name=filename))
             instance.foto = file
         elif key in extra_fields:
             setattr(instance, key, value)
