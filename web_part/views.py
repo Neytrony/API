@@ -1,8 +1,12 @@
+import datetime
+
+from celery.result import AsyncResult
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.views.generic import TemplateView
+
+from web_part.models import Files
 from web_part.tasks import update_info, get_info_csv, get_info_xlsx
 # Create your views here.
 
@@ -23,18 +27,23 @@ def get_session_message(request):
 def MainPage(request):
     # Получение списков файлов, которые нужно отобразить(есть в базе данных)
     message = get_session_message(request)
-    context = {'message': message}
+    files = Files.objects.all()
+    update_status(files.exclude(status='SUCCESS'))
+    context = {'message': message, 'files': files.order_by('-createdAt')}
     return render(request, 'main.html',  context)
 
 
-def file_upload(request):
+def file_import(request):
     if request.method == 'POST':
         # Загрузка и сохранение файла
         try:
             uploaded_file = request.FILES['myfile']
-            FileSystemStorage().save(uploaded_file.name, uploaded_file)
+            fileName = uploaded_file.name
+            FileSystemStorage().save(f'import/{fileName}', uploaded_file)
             # Распаковка аdрхива и обработка файлов из него
-            update_info.delay(uploaded_file.name)
+            task = update_info.delay(fileName)
+            task_result = AsyncResult(task.id)
+            Files.objects.create(name=fileName, type=2, fileField=f'{fileName}', task_id=task.id, status=task_result.status)
             request.session['message'] = 'Началась обработка файла'
         except BaseException:
             request.session['message'] = 'Ошибка. Файл не выбран'
@@ -43,7 +52,11 @@ def file_upload(request):
 
 def file_export_csv(request):
     try:
-        get_info_csv.delay()
+        now = datetime.datetime.now()
+        fileName = f'YcToBp_{now}.csv'
+        task = get_info_csv.delay(fileName)
+        task_result = AsyncResult(task.id)
+        Files.objects.create(name=fileName, type=1, fileField=f'{fileName}', task_id=task.id, status=task_result.status)
         request.session['message'] = 'Началась обработка файла'
     except BaseException:
         request.session['message'] = 'Ошибка.'
@@ -53,10 +66,22 @@ def file_export_csv(request):
 
 def file_export_xlsx(request):
     try:
-        get_info_xlsx.delay()
+        now = datetime.datetime.now()
+        fileName = f'YcToBp_{now}.xlsx'
+        task = get_info_xlsx.delay(fileName)
+        task_result = AsyncResult(task.id)
+        Files.objects.create(name=fileName, type=1, fileField=f'{fileName}', task_id=task.id, status=task_result.status)
         request.session['message'] = 'Началась обработка файла'
     except BaseException:
         request.session['message'] = 'Ошибка.'
     return HttpResponseRedirect('/')
+
+
+def update_status(files):
+    for file in files:
+        task_result = AsyncResult(file.task_id)
+        file.status = task_result.status
+        file.save()
+
 
 

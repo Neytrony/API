@@ -103,7 +103,6 @@ class YcToBpAPIView(views.APIView):
 
     def get(self, request):
         queryset = self.get_queryset()
-        print(queryset)
         return Response([obj.serializer() for obj in queryset])
 
     def get_queryset(self):

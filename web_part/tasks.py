@@ -1,10 +1,12 @@
-import datetime
 import csv
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 from djangoProject.celery import app
 from api.models import YcToBp
+from web_part.decorators import log_clearMediaDirs
+
 
 YcToBpDict = {
+    'id': 'id',
     'Тип операции': 'operationType',
     'Табельный номер': 'tabNum',
     'ФИО': 'FIO',
@@ -28,11 +30,27 @@ YcToBpDict = {
     'Статус СДО': 'platformStatus',
 }
 
-@app.task
-def update_info(filename):
-    reader = csv.DictReader(open(f'mediafiles/{filename}'))
 
+
+
+
+@app.task
+@log_clearMediaDirs('import/')
+def update_info(filename):
+    ext = filename.split('.')[-1]
+    if ext == 'csv':
+        csv_update(filename)
+    elif ext == 'xlsx' or ext == 'xls':
+        xlsx_update(filename)
+
+
+
+def csv_update(filename):
+    reader = csv.DictReader(open(f'mediafiles/{filename}'), delimiter=';')
     for row in reader:
+        row = dict(row)
+        with open('mediafiles/logs/error.log', 'w') as f:
+            f.write(str(row))
         instance = YcToBp.objects.filter(id=row['id'])
         if instance.exists():
             instance = instance.first()
@@ -42,66 +60,72 @@ def update_info(filename):
             instance.save()
 
 
+def xlsx_update(filename):
+    book = load_workbook(filename=f'mediafiles/import/{filename}')
+    sheet = book.active
+    for row in range(2, sheet.max_row + 1):
+        instance = YcToBp.objects.filter(id=sheet.cell(row=row, column=1).value)
+        if instance.exists():
+            instance = instance.first()
+            for column in range(2, sheet.max_column + 1):
+                value = sheet.cell(row=row, column=column).value
+                if value is not None:
+                    setattr(instance, YcToBpDict[sheet.cell(row=1, column=column).value], value)
+            instance.save()
+
+
 @app.task
-def get_info_csv():
+@log_clearMediaDirs('export/')
+def get_info_csv(filename):
     instances = YcToBp.objects.all()
-    now = datetime.datetime.now()
-    with open(f'mediafiles/YcToBp_{now}.csv', 'w', newline='') as f:
+    with open(f'mediafiles/export/{filename}', 'w', newline='') as f:
         YcToBpKeys = YcToBpDict.keys()
-        fieldanames = ['id'] + list(YcToBpKeys)
-        writer = csv.DictWriter(f, delimiter=';', fieldnames=fieldanames)
-        headers = {'id': 'id'}
+        fieldnames = list(YcToBpKeys)
+        writer = csv.DictWriter(f, delimiter=';', fieldnames=fieldnames)
+        headers = dict()
         for key in YcToBpKeys:
             headers[key] = key
         writer.writerow(headers)
         for instance in instances:
-            line = {'id': instance.id}
+            line = dict()
             for YcToBpKey in list(YcToBpKeys):
                 line[YcToBpKey] = getattr(instance, YcToBpDict[YcToBpKey])
             writer.writerow(line)
 
 
-@app.task
-def get_info_xlsx():
-    instances = YcToBp.objects.all()
-    now = datetime.datetime.now()
-    YcToBpKeys = YcToBpDict.keys()
-    # with open(f'mediafiles/YcToBp_{now}.csv', 'w', newline='') as f:
-    #     YcToBpKeys = YcToBpDict.keys()
-    #     fieldanames = ['id'] + list(YcToBpKeys)
-    #     writer = csv.DictWriter(f, delimiter=';', fieldnames=fieldanames)
-    #     header = {'id': 'id'}
-    #     for key in YcToBpKeys:
-    #         header[key] = key
-    #     writer.writerow(header)
-    #
-    #
-    #         writer.writerow(line)
 
+
+@app.task
+@log_clearMediaDirs('export/')
+def get_info_xlsx(filename):
+    instances = YcToBp.objects.all()
+    YcToBpKeys = YcToBpDict.keys()
     book = Workbook()
-    sheet = book.create_sheet()
-    headers = {'id': 'id'}
+    sheet = book.active
+    headers = dict()
     for key in YcToBpKeys:
         headers[key] = key
-    # Rows and columns are zero indexed.
-    row = 0
-    column = 0
-    # iterating through the content list
+    row = 1
+    column = 1
     for header in headers.keys():
         sheet.cell(row=row, column=column, value=header)
         column += 1
     max_column = column
-    row = 1
+    row = 2
     for instance in instances:
-        for col in range(0, max_column + 1):
-            cell = sheet.cell_value(row=0, col=col)
-            value = getattr(instance, cell)
+        for col in range(1, max_column):
+            cell = sheet.cell(row=1, column=col).value
+            value = getattr(instance, YcToBpDict[cell])
+            if cell == 'Документы протокола' or cell == 'Удостоверение(файл)':
+                value = value.name
             sheet.cell(row=row, column=col, value=value)
-    book.save(f'mediafiles/YcToBp_{now}.xlsx')
+        row += 1
+    book.save(f'mediafiles/export/{filename}')
 
 
 
-#excelData = xlrd.open_workbook(file)
+
+# excelData = xlrd.open_workbook(file)
 # sheet = excelData.sheet_by_index(0)
 #    line = {'Payment': sheet.row_values(4)[1].split(" ")[-1], 'Data': sheet.row_values(4)[11],
 #                             'Payer': sheet.row_values(8)[1],
@@ -117,4 +141,3 @@ def get_info_xlsx():
 #                             'Bank_P_Check': sheet.row_values(17)[14],
 #                             'Purpose': sheet.row_values(23)[1]}
 #                     writer.writerow((line))
-

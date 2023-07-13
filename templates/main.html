@@ -30,13 +30,13 @@
     </div>
     <div class="card-body">
         <a href="{% url 'web_part:exportCSV' %}" class="btn btn-app">
-            <i class="fas fa-download"></i> Выгрузка CSV
+            <i class="fas fa-download"></i> Экспорт CSV
         </a>
         <a href="{% url 'web_part:exportXLSX' %}" class="btn btn-app">
-            <i class="fas fa-download"></i> Выгрузка XLSX
+            <i class="fas fa-download"></i> Экспорт XLSX
         </a>
         <a class="btn btn-app" data-toggle="modal" data-target="#setModal2">
-            <i class="fas fa-upload" ></i> Загрузка
+            <i class="fas fa-upload" ></i> Импорт CSV/XLSX
         </a>
     </div>
 </div>
@@ -52,7 +52,7 @@
             </div>
             <div class="modal-body">
                 <p>выберите файлы для загрузки данных</p>
-                <form method="POST" action="{% url 'web_part:file_upload' %}" enctype="multipart/form-data">
+                <form method="POST" action="{% url 'web_part:file_import' %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <ul class="list-unstyled">
                         <li>
@@ -66,6 +66,7 @@
                         </li>
                     </ul>
                 </form>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
@@ -73,6 +74,46 @@
         </div>
     </div>
 </div>
+
+<table class="table m-0">
+    <thead>
+        <tr>
+            <th>Имя файла</th>
+            <th>Дата создания</th>
+            <th>Тип</th>
+            <th>Статус </th>
+            <th>Скачать</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in files %}
+        <tr>
+            <td>{{ a.name }}</td>
+            <td>{{ a.createdAt }}</td>
+            <td>
+                {% if a.type == 1 %}
+                    Экспорт
+                {% else %}
+                    Импорт
+                {% endif %}
+            </td>
+            <td>
+                {% if a.status == 'SUCCESS' %}
+                <span class="badge badge-success">Готово</span>
+                {% else %}
+                    {% if a.status == 'PENDING' %}
+                        <span class="badge badge-warning"> Обрабатывается</span>
+                    {% else %}
+                        <span class="badge badge-danger">Ошибка</span>
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td><a href=" {{a.fileField.url}}" download> Скачать</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 </body>
 </html>
 
