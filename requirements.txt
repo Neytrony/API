@@ -20,16 +20,21 @@ djangorestframework==3.14.0
 djangorestframework-simplejwt==5.2.2
 drf-base64==2.0
 et-xmlfile==1.1.0
+flake8==6.0.0
 flower==2.0.0
+gunicorn==20.1.0
 humanize==4.7.0
 idna==3.4
 jmespath==1.0.1
 kombu==5.3.1
+mccabe==0.7.0
 openpyxl==3.1.2
 Pillow==9.5.0
 prometheus-client==0.17.0
 prompt-toolkit==3.0.39
 psycopg2-binary==2.9.5
+pycodestyle==2.10.0
+pyflakes==3.0.1
 PyJWT==2.6.0
 python-dateutil==2.8.2
 pytz==2022.7.1
@@ -42,4 +47,5 @@ tornado==6.3.2
 tzdata==2023.3
 urllib3==1.26.15
 vine==5.0.0
+waitress==2.1.2
 wcwidth==0.2.6

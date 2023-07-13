@@ -25,16 +25,15 @@ RUN apt update \
 
 
 # lint
-RUN pip install --upgrade pip
-RUN pip install flake8==3.9.2
-COPY . .
-RUN flake8 --ignore=E501,F401,,E731,C901,W503,W504 .
+# RUN pip install --upgrade pip
+# RUN pip install flake8==3.9.2
+# COPY . .
+# RUN flake8 --ignore=E501,F401,,E731,C901,W503,W504 .
 
 # install dependencies
-COPY ./requirements.txt
+COPY ./requirements.txt .
 
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
-
 
 #########
 # FINAL #
@@ -56,7 +55,7 @@ RUN addgroup --system app && adduser --system --group app
 ENV HOME=/home/app
 ENV APP_HOME=/home/app/web
 RUN mkdir $APP_HOME 
-RUN mkdir $APP_HOME/staticfiles && mkdir $APP_HOME/mediafiles && mkdir $APP_HOME/ssl-cert && mkdir -p $APP_HOME/logs && mkdir -p $APP_HOME/mediafiles/package
+RUN mkdir $APP_HOME/staticfiles && mkdir $APP_HOME/mediafiles  && mkdir -p $APP_HOME/mediafiles/logs && mkdir -p $APP_HOME/mediafiles/export && mkdir -p $APP_HOME/mediafiles/import
 
 WORKDIR $APP_HOME
 
@@ -70,9 +69,9 @@ COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 
 # copy entrypoint.prod.sh
-# COPY ./entrypoint.prod.sh .
-# RUN sed -i 's/\r$//g'  $APP_HOME/entrypoint.prod.sh
-# RUN chmod +x $APP_HOME/entrypoint.prod.sh
+COPY ./entrypoint.prod.sh .
+RUN sed -i 's/\r$//g'  $APP_HOME/entrypoint.prod.sh
+RUN chmod +x $APP_HOME/entrypoint.prod.sh
 
 # copy project
 COPY . $APP_HOME
@@ -84,4 +83,4 @@ RUN chown -R app:app $APP_HOME
 USER app
 
 # run entrypoint.prod.sh
-# ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
+ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]

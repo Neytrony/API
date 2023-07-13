@@ -8,11 +8,13 @@ from djangoProject.s3_storage import MediaStorage
 media_storage = MediaStorage()
 MEDIA_ROOT = settings.MEDIA_ROOT
 
+
 class Base64Encoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, bytes):
             return base64.b64encode(o).decode()
         return json.JSONEncoder.default(self, o)
+
 
 class BpToYc(models.Model):
     id = models.AutoField(primary_key=True)

@@ -1,6 +1,4 @@
 import datetime
-import os
-import shutil
 
 from celery.result import AsyncResult
 from django.contrib.auth.decorators import login_required
@@ -67,7 +65,6 @@ def file_export_csv(request):
     return HttpResponseRedirect('/')
 
 
-
 @log_clearMediaDirs('export/')
 def file_export_xlsx(request):
     try:
@@ -87,6 +84,3 @@ def update_status(files):
         task_result = AsyncResult(file.task_id)
         file.status = task_result.status
         file.save()
-
-
-
