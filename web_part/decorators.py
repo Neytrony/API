@@ -10,7 +10,7 @@ def log_clearMediaDirs(path):
         def inner(*args, **kwargs):
             status, errors = clearMediaDir(path)
             if status:
-                f(*args, **kwargs)
+                return f(*args, **kwargs)
             else:
                 with open('mediafiles/logs/error.log', 'w') as g:
                     g.write('Вознили ошибки при удалении следующих файлов: \n')
@@ -28,7 +28,7 @@ def clearMediaDir(path):
                 p = os.path.join(r, name)
                 try:
                     os.remove(p)
-                    Files.objects.filter(fileField=name).delete()
+                    Files.objects.filter(name=name).delete()
                 except BaseException:
                     errors.append(p)
     if len(errors) != 0:

@@ -1,4 +1,6 @@
 import datetime
+import os
+import shutil
 
 from celery.result import AsyncResult
 from django.contrib.auth.decorators import login_required
@@ -8,6 +10,7 @@ from django.shortcuts import render
 
 from web_part.models import Files
 from web_part.tasks import update_info, get_info_csv, get_info_xlsx
+from web_part.decorators import log_clearMediaDirs
 # Create your views here.
 
 
@@ -33,6 +36,7 @@ def MainPage(request):
     return render(request, 'main.html',  context)
 
 
+@log_clearMediaDirs('import/')
 def file_import(request):
     if request.method == 'POST':
         # Загрузка и сохранение файла
@@ -40,23 +44,23 @@ def file_import(request):
             uploaded_file = request.FILES['myfile']
             fileName = uploaded_file.name
             FileSystemStorage().save(f'import/{fileName}', uploaded_file)
-            # Распаковка аdрхива и обработка файлов из него
             task = update_info.delay(fileName)
             task_result = AsyncResult(task.id)
-            Files.objects.create(name=fileName, type=2, fileField=f'{fileName}', task_id=task.id, status=task_result.status)
+            Files.objects.create(name=fileName, type=2, fileField=f'import/{fileName}', task_id=task.id, status=task_result.status)
             request.session['message'] = 'Началась обработка файла'
         except BaseException:
             request.session['message'] = 'Ошибка. Файл не выбран'
     return HttpResponseRedirect('/')
 
 
+@log_clearMediaDirs('export/')
 def file_export_csv(request):
     try:
         now = datetime.datetime.now()
         fileName = f'YcToBp_{now}.csv'
         task = get_info_csv.delay(fileName)
         task_result = AsyncResult(task.id)
-        Files.objects.create(name=fileName, type=1, fileField=f'{fileName}', task_id=task.id, status=task_result.status)
+        Files.objects.create(name=fileName, type=1, fileField=f'export/{fileName}', task_id=task.id, status=task_result.status)
         request.session['message'] = 'Началась обработка файла'
     except BaseException:
         request.session['message'] = 'Ошибка.'
@@ -64,13 +68,14 @@ def file_export_csv(request):
 
 
 
+@log_clearMediaDirs('export/')
 def file_export_xlsx(request):
     try:
         now = datetime.datetime.now()
         fileName = f'YcToBp_{now}.xlsx'
         task = get_info_xlsx.delay(fileName)
         task_result = AsyncResult(task.id)
-        Files.objects.create(name=fileName, type=1, fileField=f'{fileName}', task_id=task.id, status=task_result.status)
+        Files.objects.create(name=fileName, type=1, fileField=f'export/{fileName}', task_id=task.id, status=task_result.status)
         request.session['message'] = 'Началась обработка файла'
     except BaseException:
         request.session['message'] = 'Ошибка.'

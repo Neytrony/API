@@ -1,4 +1,5 @@
 import csv
+import time
 from openpyxl import Workbook, load_workbook
 from djangoProject.celery import app
 from api.models import YcToBp
@@ -35,18 +36,18 @@ YcToBpDict = {
 
 
 @app.task
-@log_clearMediaDirs('import/')
 def update_info(filename):
     ext = filename.split('.')[-1]
+    full_path = f'mediafiles/import/{filename}'
     if ext == 'csv':
-        csv_update(filename)
+        csv_update(full_path)
     elif ext == 'xlsx' or ext == 'xls':
-        xlsx_update(filename)
+        xlsx_update(full_path)
 
 
 
 def csv_update(filename):
-    reader = csv.DictReader(open(f'mediafiles/{filename}'), delimiter=';')
+    reader = csv.DictReader(open(filename), delimiter=';')
     for row in reader:
         row = dict(row)
         with open('mediafiles/logs/error.log', 'w') as f:
@@ -61,7 +62,7 @@ def csv_update(filename):
 
 
 def xlsx_update(filename):
-    book = load_workbook(filename=f'mediafiles/import/{filename}')
+    book = load_workbook(filename=filename)
     sheet = book.active
     for row in range(2, sheet.max_row + 1):
         instance = YcToBp.objects.filter(id=sheet.cell(row=row, column=1).value)
@@ -75,7 +76,6 @@ def xlsx_update(filename):
 
 
 @app.task
-@log_clearMediaDirs('export/')
 def get_info_csv(filename):
     instances = YcToBp.objects.all()
     with open(f'mediafiles/export/{filename}', 'w', newline='') as f:
@@ -93,10 +93,7 @@ def get_info_csv(filename):
             writer.writerow(line)
 
 
-
-
 @app.task
-@log_clearMediaDirs('export/')
 def get_info_xlsx(filename):
     instances = YcToBp.objects.all()
     YcToBpKeys = YcToBpDict.keys()
