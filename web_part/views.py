@@ -6,8 +6,8 @@ from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
-from web_part.models import Files
-from web_part.tasks import update_info, get_info_csv, get_info_xlsx
+
+from web_part.tasks import update_info, get_info_csv, get_info_xlsx, Files
 from web_part.decorators import log_clearMediaDirs
 # Create your views here.
 
@@ -58,7 +58,7 @@ def file_export_csv(request):
         fileName = f'YcToBp_{now}.csv'
         task = get_info_csv.delay(fileName)
         task_result = AsyncResult(task.id)
-        Files.objects.create(name=fileName, type=1, fileField=f'export/{fileName}', task_id=task.id, status=task_result.status)
+        Files.objects.create(name=fileName, type=1, task_id=task.id, status=task_result.status)
         request.session['message'] = 'Началась обработка файла'
     except BaseException:
         request.session['message'] = 'Ошибка.'
@@ -72,7 +72,7 @@ def file_export_xlsx(request):
         fileName = f'YcToBp_{now}.xlsx'
         task = get_info_xlsx.delay(fileName)
         task_result = AsyncResult(task.id)
-        Files.objects.create(name=fileName, type=1, fileField=f'export/{fileName}', task_id=task.id, status=task_result.status)
+        Files.objects.create(name=fileName, type=1, task_id=task.id, status=task_result.status)
         request.session['message'] = 'Началась обработка файла'
     except BaseException:
         request.session['message'] = 'Ошибка.'

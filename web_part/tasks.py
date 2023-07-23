@@ -2,6 +2,7 @@ import csv
 from openpyxl import Workbook, load_workbook
 from djangoProject.celery import app
 from api.models import YcToBp
+from web_part.models import Files
 
 
 YcToBpDict = {
@@ -16,13 +17,13 @@ YcToBpDict = {
     'Ссылка на курс обучения сотрудника': 'eduUrl',
     'Статус обучения': 'eduStatus',
     'Результат пр знаний': 'result',
-    'Документы протокола': 'protocol',
+    #'Документы протокола': 'protocol',
     'Номер протокола': 'protocolNum',
     'Дата протокола': 'protocolDate',
     'Член комиссии 1': 'memberId1',
     'Член комиссии 2': 'memberId2',
     'Член комиссии 3': 'memberId3',
-    'Удостоверение(файл)': 'cert',
+    #'Удостоверение(файл)': 'cert',
     'Дата удостоверения ': 'certDate',
     'Номер удостоверения': 'certNum',
     'Номер ФГИС ': 'FGISNum',
@@ -72,7 +73,7 @@ def xlsx_update(filename):
 @app.task
 def get_info_csv(filename):
     instances = YcToBp.objects.all()
-    with open(f'mediafiles/export/{filename}', 'w', newline='') as f:
+    with open(f'mediafiles/export/{filename}', 'w', newline='', encoding='Windows-1251') as f:
         YcToBpKeys = YcToBpDict.keys()
         fieldnames = list(YcToBpKeys)
         writer = csv.DictWriter(f, delimiter=';', fieldnames=fieldnames)
@@ -85,6 +86,9 @@ def get_info_csv(filename):
             for YcToBpKey in list(YcToBpKeys):
                 line[YcToBpKey] = getattr(instance, YcToBpDict[YcToBpKey])
             writer.writerow(line)
+    file = Files.objects.filter(name=filename).first()
+    file.fileField = f'export/{filename}'
+    file.save()
 
 
 @app.task
@@ -112,6 +116,10 @@ def get_info_xlsx(filename):
             sheet.cell(row=row, column=col, value=value)
         row += 1
     book.save(f'mediafiles/export/{filename}')
+    file = Files.objects.filter(name=filename).first()
+    file.fileField = f'export/{filename}'
+    file.save()
+
 
 
 # excelData = xlrd.open_workbook(file)
