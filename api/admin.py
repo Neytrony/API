@@ -3,13 +3,13 @@ from .models import BpToYc, YcToBp
 
 
 class BpToYcAdmin(admin.ModelAdmin):
-    list_display = ['SNILS', 'learnCode', 'dateStartLearn', 'tabNum']
-    search_fields = ['SNILS', 'learnCode', 'dateStartLearn', 'tabNum']
+    list_display = ['id', 'SNILS', 'learnCode', 'dateStartLearn', 'tabNum']
+    search_fields = ['id', 'SNILS', 'learnCode', 'dateStartLearn', 'tabNum']
 
 
 class YcToBpAdmin(admin.ModelAdmin):
-    list_display = ['SNILS', 'learnCode', 'dateStartLearn', 'tabNum']
-    search_fields = ['SNILS', 'learnCode', 'dateStartLearn', 'tabNum']
+    list_display = ['id', 'SNILS', 'learnCode', 'dateStartLearn', 'tabNum']
+    search_fields = ['id', 'SNILS', 'learnCode', 'dateStartLearn', 'tabNum']
 
     def SNILS(self, obj):
         return obj.bp_to_yc.SNILS

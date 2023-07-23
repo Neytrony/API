@@ -19,7 +19,7 @@ class BpToYcSerializer(ModelSerializer):
 
     class Meta:
         model = BpToYc
-        fields = '__all__'
+        fields = 'all'
 
     def create(self, validated_data):
         duble = BpToYc.objects.filter(SNILS=validated_data['SNILS'], learnCode=validated_data['learnCode'],
@@ -35,7 +35,7 @@ class BpToYcSerializer(ModelSerializer):
 class YcToBpSerializer(serializers.ModelSerializer):
     class Meta:
         model = YcToBp
-        fields = '__all__'
+        fields = 'all'
 
     def create(self, validated_data):
         return YcToBp.objects.create(**validated_data)
@@ -46,14 +46,13 @@ class YcToBpSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
 def Bp_To_Yc_cteate_or_update(instance, validated_data):
     extra_fields = ['operationType', 'FIO', 'tabNum', 'learnCode']
     for key, value in validated_data.items():
         if key == 'foto':
             removeOldFoto(instance.foto)
             decoded_value = base64.b64decode(value)
-            filename = validated_data['tabNum'] + '_' + validated_data['learnCode'] + '_' + validated_data['dateStartLearn'] + '.' + imghdr.what('', decoded_value)
+            filename = validated_data['tabNum'] + '_' + validated_data['learnCode'] + '_' + validated_data['date']
             file = MediaStorage().save(filename, ContentFile(decoded_value, name=filename))
             # file = FileSystemStorage().save(filename, ContentFile(decoded_value, name=filename))
             instance.foto = file

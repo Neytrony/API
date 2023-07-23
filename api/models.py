@@ -8,13 +8,11 @@ from djangoProject.s3_storage import MediaStorage
 media_storage = MediaStorage()
 MEDIA_ROOT = settings.MEDIA_ROOT
 
-
 class Base64Encoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, bytes):
             return base64.b64encode(o).decode()
         return json.JSONEncoder.default(self, o)
-
 
 class BpToYc(models.Model):
     id = models.AutoField(primary_key=True)
@@ -97,32 +95,57 @@ class BpToYc(models.Model):
 class YcToBp(models.Model):
     id = models.AutoField(primary_key=True)
     bp_to_yc = models.OneToOneField(BpToYc, on_delete=models.CASCADE, related_name='yc_to_bp')
-    operationType = models.CharField(max_length=255)
-    tabNum = models.CharField(max_length=255)
-    FIO = models.CharField(max_length=255, null=True)
-    learnCode = models.CharField(max_length=255)
-    courseCost = models.CharField(max_length=255)
-    eduName = models.CharField(max_length=255)
-    eduTime = models.CharField(max_length=255)
-    eduUrl = models.CharField(max_length=255)
-    eduStatus = models.CharField(max_length=255)
-    result = models.CharField(max_length=255)
+    operationType = models.CharField(max_length=255, verbose_name="Тип операции")
+    tabNum = models.CharField(max_length=255, verbose_name="Табельный номер")
+    FIO = models.CharField(max_length=255, null=True, verbose_name="ФИО")
+    learnCode = models.CharField(max_length=255, verbose_name="Код обучения")
+    courseCost = models.CharField(max_length=255, verbose_name="Стоимость курса")
+    eduName = models.CharField(max_length=255, verbose_name="Наименование программы обучения")
+    eduTime = models.CharField(max_length=255, verbose_name="Продолжительность обучения")
+    eduUrl = models.CharField(max_length=255, verbose_name="Ссылка на курс обучения сотрудника")
+    eduStatus = models.CharField(max_length=255, verbose_name="Статус обучения")
+    result = models.CharField(max_length=255, verbose_name="Результат пр знаний")
     protocol = models.FileField(upload_to='', null=True, blank=True, verbose_name='Протокол')
-    protocolNum = models.CharField(max_length=255)
-    protocolDate = models.CharField(max_length=255)
-    memberId1 = models.CharField(max_length=255)
-    memberId2 = models.CharField(max_length=255)
-    memberId3 = models.CharField(max_length=255)
+    protocolNum = models.CharField(max_length=255, verbose_name="Номер протокола")
+    protocolDate = models.CharField(max_length=255, verbose_name="Дата протокола")
+    memberId1 = models.CharField(max_length=255, default="100999852", verbose_name="Член комиссии 1")
+    memberId2 = models.CharField(max_length=255, default="100999853", verbose_name="Член комиссии 2")
+    memberId3 = models.CharField(max_length=255, default="100999854", verbose_name="Член комиссии 3")
     cert = models.FileField(upload_to='', null=True, blank=True, verbose_name="Удостоверение")
-    certDate = models.CharField(max_length=255)
-    certNum = models.CharField(max_length=255)
-    FGISNum = models.CharField(max_length=255)
-    platformStatus = models.CharField(max_length=255)
+    certDate = models.CharField(max_length=255, verbose_name="Дата удостоверения")
+    certNum = models.CharField(max_length=255, verbose_name="Номер удостоверения")
+    FGISNum = models.CharField(max_length=255, verbose_name="Номер ФГИС")
+    platformStatus = models.CharField(max_length=255, verbose_name="Статус СДО")
+
+
+   # id = models.AutoField(primary_key=True)
+   # bp_to_yc = models.OneToOneField(BpToYc, on_delete=models.CASCADE, related_name='yc_to_bp')
+   # operationType = models.CharField(max_length=255)
+   # tabNum = models.CharField(max_length=255)
+   # FIO = models.CharField(max_length=255, null=True)
+   # learnCode = models.CharField(max_length=255)
+   # courseCost = models.CharField(max_length=255)
+   # eduName = models.CharField(max_length=255)
+   # eduTime = models.CharField(max_length=255)
+   # eduUrl = models.CharField(max_length=255)
+   # eduStatus = models.CharField(max_length=255)
+   # result = models.CharField(max_length=255)
+   # protocol = models.FileField(upload_to='', null=True, blank=True, verbose_name='Протокол')
+   # protocolNum = models.CharField(max_length=255)
+   # protocolDate = models.CharField(max_length=255)
+   # memberId1 = models.CharField(max_length=255)
+   # memberId2 = models.CharField(max_length=255)
+   # memberId3 = models.CharField(max_length=255)
+   # cert = models.FileField(upload_to='', null=True, blank=True, verbose_name="Удостоверение")
+   # certDate = models.CharField(max_length=255)
+   # certNum = models.CharField(max_length=255)
+   # FGISNum = models.CharField(max_length=255)
+   # platformStatus = models.CharField(max_length=255)
 
     def serializer(self):
         if self.protocol:
             protocolName = self.protocol.name
-            protocolPath = f'https://apiuc.hb.bizmrg.com/{self.protocol}'
+            protocolPath = f'https://apiuc.hb.bizmrg.com/media/{self.protocol}'
             try:
                 S3_protocol = media_storage.open(self.protocol.name, 'rb')
                 protocolBase64 = json.dumps(S3_protocol.read(), cls=Base64Encoder)[1:-1]
@@ -134,7 +157,7 @@ class YcToBp(models.Model):
             protocolBase64 = ''
         if self.cert:
             certName = self.cert.name
-            certPath = f'https://apiuc.hb.bizmrg.com/{self.cert}'
+            certPath = f'https://apiuc.hb.bizmrg.com/media/{self.cert}'
             try:
                 S3_cert = media_storage.open(self.cert.name, 'rb')
                 certBase64 = json.dumps(S3_cert.read(), cls=Base64Encoder)[1:-1]
@@ -159,7 +182,7 @@ class YcToBp(models.Model):
             'result': self.result,
             'protocolName': protocolName,
             'protocolPath': protocolPath,
-            'protocolBase64': protocolBase64,
+           # 'protocolBase64': protocolBase64,
             'protocolNum': self.protocolNum,
             'protocolDate': self.protocolDate,
             'memberId1': self.memberId1,
@@ -167,7 +190,7 @@ class YcToBp(models.Model):
             'memberId3': self.memberId3,
             'certName': certName,
             'certPath': certPath,
-            'certBase64': certBase64,
+           # 'certBase64': certBase64,
             'certDate': self.certDate,
             'certNum': self.certNum,
             'FGISNum': self.FGISNum,
