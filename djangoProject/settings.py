@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'api.config.RestApiConfig',
+    'apiSout.config.ApisoutConfig',
     'web_part.config.WebConfig',
     'rest_framework',
     'django_filters',
