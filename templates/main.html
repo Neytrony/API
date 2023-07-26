@@ -108,7 +108,13 @@
                     {% endif %}
                 {% endif %}
             </td>
-            <td><a href=" {{a.fileField.url}}" download> Скачать</a></td>
+            <td>
+                {% if a.fileField %}
+                    <a href=" {{a.fileField.url}}" download> Скачать</a>
+                {% else %}
+                    <a></a>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>

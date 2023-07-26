@@ -2,7 +2,7 @@ import csv
 from openpyxl import Workbook, load_workbook
 from djangoProject.celery import app
 from api.models import YcToBp
-
+from web_part.models import Files
 
 YcToBpDict = {
     'id': 'id',
@@ -16,17 +16,17 @@ YcToBpDict = {
     'Ссылка на курс обучения сотрудника': 'eduUrl',
     'Статус обучения': 'eduStatus',
     'Результат пр знаний': 'result',
-    'Документы протокола': 'protocol',
     'Номер протокола': 'protocolNum',
     'Дата протокола': 'protocolDate',
     'Член комиссии 1': 'memberId1',
     'Член комиссии 2': 'memberId2',
     'Член комиссии 3': 'memberId3',
-    'Удостоверение(файл)': 'cert',
     'Дата удостоверения ': 'certDate',
     'Номер удостоверения': 'certNum',
     'Номер ФГИС ': 'FGISNum',
     'Статус СДО': 'platformStatus',
+    'Документы протокола': 'protocol',
+    'Удостоверение(файл)': 'cert',
 }
 
 
@@ -72,7 +72,7 @@ def xlsx_update(filename):
 @app.task
 def get_info_csv(filename):
     instances = YcToBp.objects.all()
-    with open(f'mediafiles/export/{filename}', 'w', newline='') as f:
+    with open(f'mediafiles/export/{filename}', 'w', newline='', encoding='Windows-1251') as f:
         YcToBpKeys = YcToBpDict.keys()
         fieldnames = list(YcToBpKeys)
         writer = csv.DictWriter(f, delimiter=';', fieldnames=fieldnames)
@@ -85,6 +85,9 @@ def get_info_csv(filename):
             for YcToBpKey in list(YcToBpKeys):
                 line[YcToBpKey] = getattr(instance, YcToBpDict[YcToBpKey])
             writer.writerow(line)
+    file = Files.objects.get(name=filename)
+    file.fileField = f'export/{filename}'
+    file.save()
 
 
 @app.task
@@ -112,7 +115,13 @@ def get_info_xlsx(filename):
             sheet.cell(row=row, column=col, value=value)
         row += 1
     book.save(f'mediafiles/export/{filename}')
-
+    file = Files.objects.get(name=filename)
+    file.fileField = f'export/{filename}'
+    file.save()
+    with open('mediafiles/logs/1.txt','w') as g:
+        g.write(file.name)
+        g.write(file.fileField.path)
+        g.write('123213213')
 
 # excelData = xlrd.open_workbook(file)
 # sheet = excelData.sheet_by_index(0)

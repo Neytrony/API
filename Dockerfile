@@ -1,27 +1,33 @@
 # pull official base image
 #FROM python:3.9.6-alpine
-FROM python:3.9
+FROM python:3.9-buster
 
 # copy project
 #COPY . .
 
+# Копирование файла sources.list в контейнер
+COPY ./sources.list /etc/apt/sources.list
+
 # set work directory
-RUN mkdir -p /usr/src/app && mkdir -p /usr/src/app/mediafiles && mkdir -p /usr/src/app/mediafiles/logs/
+RUN mkdir -p /usr/src/app && mkdir -p /usr/src/app/mediafiles && mkdir -p /usr/src/app/mediafiles/logs/ && mkdir -p /usr/src/app/mediafiles/import && mkdir -p /usr/src/app/mediafiles/export
 
 
 #WORKDIR /Users/User/Documents/Project/TelegramsBot/evcmo_pay_bot/telebot
 WORKDIR /usr/src/app
+
+# install dependencies
+RUN apt-get update && apt-get install -y nano iputils-ping
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install psycopg2 dependencies
-RUN apt update \
-    && apt install -y \
-    gcc \
+RUN apt-get update \
+    && apt-get install -y \
+    gcc
     #postgresql-dev \
-    python3-dev
+#    python3-dev
     
     # libcogl-pango-dev \
     # libcairo2-dev \

@@ -105,7 +105,7 @@ class YcToBp(models.Model):
     eduUrl = models.CharField(max_length=255, verbose_name="Ссылка на курс обучения сотрудника")
     eduStatus = models.CharField(max_length=255, verbose_name="Статус обучения")
     result = models.CharField(max_length=255, verbose_name="Результат пр знаний")
-    protocol = models.FileField(upload_to='', null=True, blank=True, verbose_name='Протокол')
+    protocol = models.FileField(upload_to='', null=True, blank=True, verbose_name="Протокол")
     protocolNum = models.CharField(max_length=255, verbose_name="Номер протокола")
     protocolDate = models.CharField(max_length=255, verbose_name="Дата протокола")
     memberId1 = models.CharField(max_length=255, default="100999852", verbose_name="Член комиссии 1")
