@@ -4,7 +4,6 @@ from djangoProject.celery import app
 from api.models import YcToBp
 from web_part.models import Files
 
-
 YcToBpDict = {
     'id': 'id',
     'Тип операции': 'operationType',
@@ -17,17 +16,17 @@ YcToBpDict = {
     'Ссылка на курс обучения сотрудника': 'eduUrl',
     'Статус обучения': 'eduStatus',
     'Результат пр знаний': 'result',
-    #'Документы протокола': 'protocol',
     'Номер протокола': 'protocolNum',
     'Дата протокола': 'protocolDate',
     'Член комиссии 1': 'memberId1',
     'Член комиссии 2': 'memberId2',
     'Член комиссии 3': 'memberId3',
-    #'Удостоверение(файл)': 'cert',
     'Дата удостоверения ': 'certDate',
     'Номер удостоверения': 'certNum',
     'Номер ФГИС ': 'FGISNum',
     'Статус СДО': 'platformStatus',
+    'Документы протокола': 'protocol',
+    'Удостоверение(файл)': 'cert',
 }
 
 
@@ -86,7 +85,7 @@ def get_info_csv(filename):
             for YcToBpKey in list(YcToBpKeys):
                 line[YcToBpKey] = getattr(instance, YcToBpDict[YcToBpKey])
             writer.writerow(line)
-    file = Files.objects.filter(name=filename).first()
+    file = Files.objects.get(name=filename)
     file.fileField = f'export/{filename}'
     file.save()
 
@@ -116,25 +115,6 @@ def get_info_xlsx(filename):
             sheet.cell(row=row, column=col, value=value)
         row += 1
     book.save(f'mediafiles/export/{filename}')
-    file = Files.objects.filter(name=filename).first()
+    file = Files.objects.get(name=filename)
     file.fileField = f'export/{filename}'
     file.save()
-
-
-
-# excelData = xlrd.open_workbook(file)
-# sheet = excelData.sheet_by_index(0)
-#    line = {'Payment': sheet.row_values(4)[1].split(" ")[-1], 'Data': sheet.row_values(4)[11],
-#                             'Payer': sheet.row_values(8)[1],
-#                             'INN_P': sheet.row_values(7)[1].split(" ")[1],
-#                             'KPP_P': sheet.row_values(7)[6].split(" ")[-1], 'Sum': sheet.row_values(7)[14],
-#                             'Bank_R_Check': sheet.row_values(9)[14],
-#                             'Bank_P': sheet.row_values(11)[1], 'BIK_R': sheet.row_values(11)[14],
-#                             'Korr_R': sheet.row_values(12)[14], 'Bank_R': sheet.row_values(14)[1],
-#                             'BIK_P': sheet.row_values(14)[14],
-#                             'Korr_P': sheet.row_values(15)[14],
-#                             'Recipient': sheet.row_values(18)[1], 'INN_R': sheet.row_values(17)[1].split(" ")[-1],
-#                             'KPP_R': sheet.row_values(17)[6].split(" ")[1],
-#                             'Bank_P_Check': sheet.row_values(17)[14],
-#                             'Purpose': sheet.row_values(23)[1]}
-#                     writer.writerow((line))

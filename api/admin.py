@@ -18,9 +18,5 @@ class YcToBpAdmin(admin.ModelAdmin):
         return obj.bp_to_yc.dateStartLearn
 
 
-
-
-
-
 admin.site.register(BpToYc, BpToYcAdmin)
 admin.site.register(YcToBp, YcToBpAdmin)

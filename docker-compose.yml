@@ -13,8 +13,8 @@ services:
       - 8000:8000
     env_file:
       - ./.env.dev
-    networks:
-      - web_network
+#    networks:
+#      - web_network
   celery:
     platform: linux/amd64
     build: .
@@ -23,15 +23,15 @@ services:
       - .:/usr/src/app
     env_file:
       - ./.env.dev
-    networks:
-      - web_network
+#    networks:
+#      - web_network
     depends_on:
       - api-app
       - redis
   redis:
     image: redis:7-alpine
-    networks:
-      - web_network
+#    networks:
+#      - web_network
 
   dashboard:
     platform: linux/amd64
@@ -41,13 +41,9 @@ services:
       - 5555:5555
     env_file:
       - ./.env.dev
-    networks:
-      - web_network
+#    networks:
+#      - web_network
     depends_on:
       - api-app
       - redis
       - celery
-
-networks:
-  web_network:
-    driver: bridge
