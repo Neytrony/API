@@ -6,6 +6,7 @@ from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
+
 from web_part.tasks import update_info, get_info_csv, get_info_xlsx, Files
 from web_part.decorators import log_clearMediaDirs
 # Create your views here.

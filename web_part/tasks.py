@@ -118,24 +118,3 @@ def get_info_xlsx(filename):
     file = Files.objects.get(name=filename)
     file.fileField = f'export/{filename}'
     file.save()
-    with open('mediafiles/logs/1.txt','w') as g:
-        g.write(file.name)
-        g.write(file.fileField.path)
-        g.write('123213213')
-
-# excelData = xlrd.open_workbook(file)
-# sheet = excelData.sheet_by_index(0)
-#    line = {'Payment': sheet.row_values(4)[1].split(" ")[-1], 'Data': sheet.row_values(4)[11],
-#                             'Payer': sheet.row_values(8)[1],
-#                             'INN_P': sheet.row_values(7)[1].split(" ")[1],
-#                             'KPP_P': sheet.row_values(7)[6].split(" ")[-1], 'Sum': sheet.row_values(7)[14],
-#                             'Bank_R_Check': sheet.row_values(9)[14],
-#                             'Bank_P': sheet.row_values(11)[1], 'BIK_R': sheet.row_values(11)[14],
-#                             'Korr_R': sheet.row_values(12)[14], 'Bank_R': sheet.row_values(14)[1],
-#                             'BIK_P': sheet.row_values(14)[14],
-#                             'Korr_P': sheet.row_values(15)[14],
-#                             'Recipient': sheet.row_values(18)[1], 'INN_R': sheet.row_values(17)[1].split(" ")[-1],
-#                             'KPP_R': sheet.row_values(17)[6].split(" ")[1],
-#                             'Bank_P_Check': sheet.row_values(17)[14],
-#                             'Purpose': sheet.row_values(23)[1]}
-#                     writer.writerow((line))
