@@ -1,4 +1,6 @@
 import csv
+import time
+
 from openpyxl import Workbook, load_workbook
 from djangoProject.celery import app
 from api.models import YcToBp
@@ -71,6 +73,7 @@ def xlsx_update(filename):
 
 @app.task
 def get_info_csv(filename):
+    time.sleep(2)
     instances = YcToBp.objects.all()
     with open(f'mediafiles/export/{filename}', 'w', newline='', encoding='Windows-1251') as f:
         YcToBpKeys = YcToBpDict.keys()
@@ -92,6 +95,7 @@ def get_info_csv(filename):
 
 @app.task
 def get_info_xlsx(filename):
+    time.sleep(2)
     instances = YcToBp.objects.all()
     YcToBpKeys = YcToBpDict.keys()
     book = Workbook()
