@@ -203,7 +203,7 @@ class Employee(models.Model):
     birthDate = models.CharField(max_length=255, null=True, blank=True, verbose_name='Дата рождения сотрудника')
     gender = models.CharField(max_length=255, null=True, blank=True, verbose_name='Пол сотрудника')
     invalid = models.CharField(max_length=255, null=True, blank=True, verbose_name='Инвалид')
-    soutToAc = models.ForeignKey(SoutToAc, related_name='employees', on_delete=models.CASCADE, null=True, blank=True, verbose_name='входящий СОУТ')
+    soutToAc = models.ForeignKey(SoutToAc, related_name='employees', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Сотрудник')
 
     def __str__(self):
         return f'{self.SNILS}; {self.surname} {self.name} {self.secondName}'
@@ -229,7 +229,7 @@ class Employee(models.Model):
 class RM(models.Model):
     amountRM = models.CharField(max_length=255, null=True, blank=True, verbose_name='Количество аналогичных Р/М')
     numberRM = models.CharField(max_length=255, null=True, blank=True, verbose_name='номер Р/М')
-    soutToAc = models.ForeignKey(SoutToAc, related_name='RMs', on_delete=models.CASCADE, null=True, blank=True, verbose_name='входящий СОУТ')
+    soutToAc = models.ForeignKey(SoutToAc, related_name='RMs', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Р/М')
 
     def __str__(self):
         return f'{self.amountRM}; {self.numberRM}'
@@ -249,7 +249,7 @@ class RM(models.Model):
 class CommissionMember(models.Model):
     FIO = models.CharField(max_length=255, null=True, blank=True, verbose_name='Фио члена комиссии')
     position = models.CharField(max_length=255, null=True, blank=True, verbose_name='Должность члена комиссии')
-    soutToAc = models.ForeignKey(SoutToAc, related_name='commissionMembers', on_delete=models.CASCADE, null=True, blank=True, verbose_name='входящий СОУТ')
+    soutToAc = models.ForeignKey(SoutToAc, related_name='commissionMembers', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Член комиссии')
 
     def __str__(self):
         return f'{self.FIO}; {self.position}'
@@ -270,7 +270,7 @@ class ResultMapSOUT(models.Model):
     numberSOUT = models.CharField(max_length=255, null=True, blank=True, verbose_name='Номер прошлой карты СОУТ')
     agreementDate = models.CharField(max_length=255, null=True, blank=True, verbose_name='Дата утверждения отчета прошлой СОУТ')
     workingConditionClass = models.CharField(max_length=255, null=True, blank=True, verbose_name='Класс условий труда прошлой СОУТ')
-    soutToAc = models.ForeignKey(SoutToAc, related_name='earlierSOUT', on_delete=models.CASCADE, null=True, blank=True, verbose_name='входящий СОУТ')
+    soutToAc = models.ForeignKey(SoutToAc, related_name='earlierSOUT', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Результат прошлой СОУТ')
 
     def __str__(self):
         return f'{self.numberSOUT}; {self.agreementDate}'
@@ -292,7 +292,7 @@ class ResultMapSOUT(models.Model):
 class BadFactor(models.Model):
     badFactor = models.CharField(max_length=255, null=True, blank=True, verbose_name='Вредные фактор прошлой СОУТ')
     factorConditionClass = models.CharField(max_length=255, null=True, blank=True, verbose_name='Класс условий фактора')
-    resultMapSOUT = models.ForeignKey(ResultMapSOUT, related_name='badFactors', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Ранее проведенный СОУТ')
+    resultMapSOUT = models.ForeignKey(ResultMapSOUT, related_name='badFactors', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Вредный фактор')
 
     def __str__(self):
         return f'{self.badFactor}; {self.factorConditionClass}'

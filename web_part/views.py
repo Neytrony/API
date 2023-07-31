@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from api.models import YcToBp
-from apiSout.models import SoutToAc
+from apiSout.models import SoutToAc, Employee
 from web_part.tasks import update_info, get_info_csv, get_info_xlsx, Files
 from web_part.decorators import log_clearMediaDirs
 
@@ -58,11 +58,10 @@ def file_export(request):
     return HttpResponseRedirect('/')
 
 
-def file_processing(request, func, table):
+def file_processing(request, func, model):
     try:
         now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-        fileName = f'{table.__name__}_{now}.{func[1]}'
-        print(fileName)
+        fileName = f'{model.__name__}_{now}.{func[1]}'
         task = func[0].delay(fileName)
         task_result = AsyncResult(task.id)
         Files.objects.create(name=fileName, type=1, task_id=task.id, status=task_result.status)

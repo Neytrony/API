@@ -196,3 +196,6 @@ class YcToBp(models.Model):
             'FGISNum': self.FGISNum,
             'platformStatus': self.platformStatus
         }
+
+    def __str__(self):
+        return f'{self.id} {self.tabNum} {self.learnCode}'
