@@ -6,10 +6,10 @@ from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
-
+from api.models import YcToBp
+from apiSout.models import SoutToAc, Employee
 from web_part.tasks import update_info, get_info_csv, get_info_xlsx, Files
 from web_part.decorators import log_clearMediaDirs
-# Create your views here.
 
 
 def get_session_message(request):
@@ -30,7 +30,7 @@ def MainPage(request):
     message = get_session_message(request)
     files = Files.objects.all()
     update_status(files.exclude(status='SUCCESS'))
-    context = {'message': message, 'files': files.order_by('-createdAt')}
+    context = {'message': message, 'files': files.order_by('-createdAt'),}
     return render(request, 'main.html',  context)
 
 
@@ -52,11 +52,17 @@ def file_import(request):
 
 
 @log_clearMediaDirs('export/')
-def file_export_csv(request):
+def file_export(request):
+    if request.method == 'POST':
+        file_processing(request, FILE_TYPE_CHOICES[request.POST['file_type_choice']], TABLE_CHOICES[request.POST['model_choice']])
+    return HttpResponseRedirect('/')
+
+
+def file_processing(request, func, model):
     try:
-        now = datetime.datetime.now()
-        fileName = f'YcToBp_{now}.csv'
-        task = get_info_csv.delay(fileName)
+        now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        fileName = f'{model.__name__}_{now}.{func[1]}'
+        task = func[0].delay(fileName)
         task_result = AsyncResult(task.id)
         Files.objects.create(name=fileName, type=1, task_id=task.id, status=task_result.status)
         request.session['message'] = 'Началась обработка файла'
@@ -65,18 +71,14 @@ def file_export_csv(request):
     return HttpResponseRedirect('/')
 
 
-@log_clearMediaDirs('export/')
-def file_export_xlsx(request):
-    try:
-        now = datetime.datetime.now()
-        fileName = f'YcToBp_{now}.xlsx'
-        task = get_info_xlsx.delay(fileName)
-        task_result = AsyncResult(task.id)
-        Files.objects.create(name=fileName, type=1, task_id=task.id, status=task_result.status)
-        request.session['message'] = 'Началась обработка файла'
-    except BaseException:
-        request.session['message'] = 'Ошибка.'
-    return HttpResponseRedirect('/')
+TABLE_CHOICES = {
+    '1': YcToBp,
+    '2': SoutToAc,
+}
+FILE_TYPE_CHOICES = {
+    '1': (get_info_xlsx, 'xlsx'),
+    '2': (get_info_csv, 'csv')
+}
 
 
 def update_status(files):

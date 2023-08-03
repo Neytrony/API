@@ -24,22 +24,50 @@
     <title>Title</title>
 </head>
 <body>
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Загрузка файла</h3>
+<div class="row">
+    <div class="card col-6" >
+        <div class="card-header">
+            <h3 class="card-title"><b>Выгрузка файла</b></h3>
+        </div>
+        <form method="POST" action="{% url 'web_part:export' %}">
+            {% csrf_token %}
+            </br>
+            <h5>Выберите выгружаемую таблицу</h5>
+            <div class="input-group mb-3">
+                <select class="custom-select" id="inputGroupSelect01" name="model_choice" required>
+<!--                    <option selected></option>-->
+                    <option selected value="1">YcToBp</option>
+<!--                    <option value="2">SoutToAc</option>-->
+                </select>
+            </div>
+            <h5>Выберите тип выгружаемого файла</h5>
+            <div class="input-group mb-3">
+                <select class="custom-select" id="inputGroupSelect02" name="file_type_choice" required>
+                    <option selected value="1">XLSX</option>
+                    <option value="2">CSV</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-block btn-primary"> Выгрузить</button>
+
+        </form>
     </div>
-    <div class="card-body">
-        <a href="{% url 'web_part:exportCSV' %}" class="btn btn-app">
-            <i class="fas fa-download"></i> Экспорт CSV
-        </a>
-        <a href="{% url 'web_part:exportXLSX' %}" class="btn btn-app">
-            <i class="fas fa-download"></i> Экспорт XLSX
-        </a>
-        <a class="btn btn-app" data-toggle="modal" data-target="#setModal2">
-            <i class="fas fa-upload" ></i> Импорт CSV/XLSX
-        </a>
+
+    <div class="card col-6">
+        <div class="card-header">
+            <h3 class="card-title"><b>Загрузка файла</b></h3>
+        </div>
+        <div class="card-body">
+           <a class="btn btn-app" data-toggle="modal" data-target="#setModal2">
+               <i class="fas fa-upload" ></i> Импорт CSV/XLSX
+           </a>
+        </div>
     </div>
 </div>
+
+
+
+
 
 <div class="modal fade" id="setModal2" role="dialog">
     <div class="modal-dialog modal-lg">

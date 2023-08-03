@@ -22,6 +22,7 @@ from djangoProject import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    path('api/sout/', include('apiSout.urls')),
     path('', include(('web_part.urls', 'web-part'), namespace='web_part'))
 ]
 
