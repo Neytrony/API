@@ -21,7 +21,7 @@ CORE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-65e(%(lg&#&fxs3n*1t%^+9#d5_y1%dq#xz_ckmsc+kr-u1zac')
+SECRET_KEY = 'django-insecure-65e(%(lg&#&fxs3n*1t%^+9#d5_y1%dq#xz_ckmsc+kr-u1zac'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -94,6 +94,10 @@ DATABASES = {
         'PASSWORD': os.environ.get('PASSWORD', None),
         'HOST': os.environ.get('HOST', None),
         'PORT': os.environ.get('PORT', None),
+    },
+    'test': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'test_db.sqlite3',
     }
 }
 
