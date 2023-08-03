@@ -54,7 +54,7 @@ class SoutFromAcAPIView(views.APIView):
         return Response([obj.serializer() for obj in queryset])
 
     def get_queryset(self):
-        queryset = SoutFromAc.objects.all()
+        queryset = SoutFromAc.objects.using('test').all()
         query_params_dict = dict(self.request.query_params.lists())
         my_dict = dict()
         for key, value in query_params_dict.items():
@@ -75,7 +75,7 @@ class OneSoutFromAcAPIView(views.APIView):
             return Response({'message': f'Object with cardNum = {cardNum} not found.'}, HTTP_404_NOT_FOUND)
 
     def get_queryset(self, cardNum):
-        queryset = SoutFromAc.objects.filter(cardNum=cardNum)
+        queryset = SoutFromAc.objects.using('test').filter(cardNum=cardNum)
         return queryset
 
 
@@ -87,7 +87,7 @@ class SoutToAcAPIView(views.APIView):
         return Response([obj.serializer() for obj in queryset])
 
     def get_queryset(self):
-        queryset = SoutToAc.objects.all()
+        queryset = SoutToAc.objects.using('test').all()
         query_params_dict = dict(self.request.query_params.lists())
         my_dict = dict()
         for key, value in query_params_dict.items():
@@ -101,7 +101,7 @@ class SoutToAcAPIView(views.APIView):
         result = []
         for validated_data in data:
             result.append(model_obj_create_or_update(SoutToAc, ['cardNum'], validated_data))
-            SoutFromAc.objects.update_or_create(cardNum=validated_data['cardNum'])
+            SoutFromAc.objects.using('test').update_or_create(cardNum=validated_data['cardNum'])
         return Response([res.serializer() for res in result])
 
 
@@ -109,11 +109,11 @@ def model_obj_create_or_update(model, unique_params, validated_data, fk_rel=None
     unique_params_dict = {key: validated_data[key] for key in unique_params}
     if fk_rel is not None:
         unique_params_dict[fk_rel['field']] = fk_rel['extra_instance']
-    duble = model.objects.filter(**unique_params_dict)
+    duble = model.objects.using('test').filter(**unique_params_dict)
     if duble.exists():
         instance = duble.first()
     else:
-        instance = model.objects.create(**unique_params_dict)
+        instance = model.objects.using('test').create(**unique_params_dict)
     return obj_create_or_update(instance, validated_data, fk_rel)
 
 
@@ -129,10 +129,10 @@ def obj_create_or_update(instance, validated_data, fk_rel=None):
             extra_params = modelDict[key]['unique_params']
             extra_dict['extra_instance'] = instance
 
-            extra_model.objects.filter(**{extra_dict['field']: instance}).delete()
+            extra_model.objects.using('test').filter(**{extra_dict['field']: instance}).delete()
             for extra_value in value:
                 model_obj_create_or_update(extra_model, extra_params, extra_value, extra_dict)
     if fk_rel is not None:
         setattr(instance, fk_rel['field'], fk_rel['extra_instance'])
-    instance.save()
+    instance.save(using='test')
     return instance
