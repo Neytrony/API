@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SoutToAc, SoutFromAc, Employee, RM, ResultMapSOUT, BadFactor, CommissionMember
+from .models import SoutToAc, SoutFromAc, Employee, RM, ResultMapSOUT, BadFactor, CommissionMember, Protocol
 
 
 class EmployeeInline(admin.TabularInline):
@@ -22,6 +22,11 @@ class CommissionMemberInline(admin.TabularInline):
     extra = 1
 
 
+class ProtocolInline(admin.TabularInline):
+    model = Protocol
+    extra = 1
+
+
 class BadFactorInline(admin.TabularInline):
     model = BadFactor
     extra = 1
@@ -34,8 +39,14 @@ class SoutToAcAdmin(admin.ModelAdmin):
 
 
 class SoutFromAcAdmin(admin.ModelAdmin):
+    inlines = (ProtocolInline, )
     list_display = ['cardNum']
     search_fields = ['cardNum']
+
+
+class ProtocolAdmin(admin.ModelAdmin):
+    list_display = ['protocolNum', 'protocolDate']
+    search_fields = ['protocolNum']
 
 
 class EmployeeAdmin(admin.ModelAdmin):
@@ -69,6 +80,7 @@ class CommissionMemberAdmin(admin.ModelAdmin):
 
 admin.site.register(SoutToAc, SoutToAcAdmin)
 admin.site.register(SoutFromAc, SoutFromAcAdmin)
+admin.site.register(Protocol, ProtocolAdmin)
 admin.site.register(Employee, EmployeeAdmin)
 admin.site.register(RM, RMAdmin)
 admin.site.register(ResultMapSOUT, ResultMapSOUTAdmin)

@@ -1,6 +1,7 @@
 import csv
 import time
 
+from datetime import datetime
 from openpyxl import Workbook, load_workbook
 from djangoProject.celery import app
 from api.models import YcToBp
@@ -16,9 +17,9 @@ def create_model_dict(Model):
     list1 = list()
     list2 = list()
     [list1.append(i.name) if type(i) not in [ManyToOneRel, OneToOneField] else list2.append(i.name) for i in Model._meta.get_fields()]
-    result = {Model._meta.get_field(key).verbose_name: key for key in list1}
-    if Model.__name__ != 'YcToBp':
-        result['Relations'] = {key: key for key in list2}
+    result = {Model._meta.get_field(item).verbose_name: item for item in list1}
+    if Model.__name__ in ['SoutToAc']:
+        result['Relations'] = {item: item for item in list2}
     return result
 
 
@@ -52,6 +53,10 @@ ModelsDict = {
     'SoutToAc': create_model_dict(SoutToAc),
     'SoutfromAc': create_model_dict(SoutFromAc),
     'Employee': create_model_dict(Employee),
+    'RM': create_model_dict(RM),
+    'CommissionMember': create_model_dict(CommissionMember),
+    'ResultMapSOUT': create_model_dict(ResultMapSOUT),
+    'BadFactor': create_model_dict(BadFactor),
 }
 
 
@@ -76,7 +81,11 @@ def csv_update(filename):
             instance = instance.first()
             for key, value in row.items():
                 if key != 'id':
-                    setattr(instance, ModelsDict['YcToBp'][key], value)
+                    field_name = ModelsDict['YcToBp'][key]
+                    if 'Date' in field_name:
+                        value = str(value).split(' ')[0]
+                        value = str(datetime.strptime(value, '%Y-%m-%d').date().strftime('%d.%m.%Y'))
+                    setattr(instance, field_name, value)
             instance.save()
 
 
@@ -90,58 +99,59 @@ def xlsx_update(filename):
             for column in range(2, sheet.max_column + 1):
                 value = sheet.cell(row=row, column=column).value
                 if value is not None:
-                    setattr(instance, ModelsDict['YcToBp'][sheet.cell(row=1, column=column).value], value)
+                    field_name = ModelsDict['YcToBp'][sheet.cell(row=1, column=column).value]
+                    if 'Date' in field_name:
+                        value = str(value).split(' ')[0]
+                        value = str(datetime.strptime(value, '%Y-%m-%d').date().strftime('%d.%m.%Y'))
+                    setattr(instance, field_name, value)
             instance.save()
 
 
 @app.task
 def get_info_csv(filename):
     time.sleep(2)
-    instances = SoutToAc.objects.all()
+    instances = YcToBp.objects.all()
+    a_dict = ModelsDict['YcToBp']
+    # extra_models = a_dict.get('Relations').keys()
+    add_dict = a_dict.copy()
     with open(f'mediafiles/export/{filename}', 'w', newline='', encoding='Windows-1251') as f:
-        a_dict = ModelsDict['SoutToAc']
-        extra_models = a_dict.get('Relations').keys()
-        if extra_models:
-            add_dict = a_dict.copy()
-            add_dict.pop('Relations')
-            fieldnames = list(add_dict)
-            for extra_model in extra_models:
-                a_model = getattr(instances.last(), extra_model).all()
-                if a_model.exists():
-                    with open('mediafiles/logs/error.log', 'w') as g:
-                        a_model = a_model.first().__class__
-                        amount = list(a_model.objects.values('soutToAc').annotate(amount=Count('soutToAc')).order_by())[0]['amount']
-                        for num in range(1, amount+1):
-                            for field in ModelsDict[a_model.__name__]:
-                                g.write(f'{field}')
-                                # fieldnames.append(f'{a_model._meta.verbose_name.title()} №{num}. {a_model._meta.get_field(field).verbose_name}')
-        else:
-            fieldnames = list(a_dict)
-        with open('mediafiles/logs/error.log', 'w') as g:
-            # [f.write(f'{key}: {value}\n') for key, value in ModelsDict['SoutToAc'].items()]
-            [g.write(f'{value}\n') for value in fieldnames]
+        # if extra_models:
+        #     add_dict.pop('Relations')
+        #     fieldnames = list(add_dict)
+        #     for extra_model in extra_models:
+        #         a_model = getattr(instances.last(), extra_model).all()
+        #         if a_model.exists():
+        #             with open('mediafiles/logs/error.log', 'w') as g:
+        #                 a_model = a_model.first().__class__
+        #                 amount = list(a_model.objects.values('soutToAc').annotate(amount=Count('soutToAc')).order_by())[0]['amount']
+        #                 for num in range(1, amount+1):
+        #                     modelDict = ModelsDict[a_model.__name__]
+        #                     for key, value in modelDict.items():
+        #                         if key not in ['soutToAc', 'resultMapSOUT']:
+        #                             g.write(f'{key}')
+        #                             fieldnames.append(f'{a_model._meta.verbose_name.title()} №{num}. {a_model._meta.get_field(value).verbose_name}')
+        # else:
+        fieldnames = list(a_dict)
         dictKeys = add_dict.keys()
         writer = csv.DictWriter(f, delimiter=';', fieldnames=fieldnames)
         headers = dict()
         for field in fieldnames:
             headers[field] = field
         writer.writerow(headers)
-    #     for instance in instances:
-    #         line = dict()
-    #         for dictKey in list(dictKeys):
-    #             line[dictKey] = getattr(instance, ModelsDict['YcToBp'][dictKey])
-    #         if a_dict.get('Relations'):
-    #             pass
-    #         writer.writerow(line)
-    # file = Files.objects.get(name=filename)
-    # file.fileField = f'export/{filename}'
-    # file.save()
+        for instance in instances:
+            line = dict()
+            for dictKey in list(dictKeys):
+                line[dictKey] = getattr(instance, ModelsDict['YcToBp'][dictKey])
+            if a_dict.get('Relations'):
+                pass
+            writer.writerow(line)
+    file = Files.objects.get(name=filename)
+    file.fileField = f'export/{filename}'
+    file.save()
 
 
 @app.task
 def get_info_xlsx(filename):
-    with open('mediafiles/logs/error.log', 'w') as f:
-        [f.write(f'{key}: {value}\n') for key, value in ModelsDict['Employee'].items()]
     time.sleep(2)
     instances = YcToBp.objects.all()
     YcToBpKeys = ModelsDict['YcToBp'].keys()
@@ -166,7 +176,7 @@ def get_info_xlsx(filename):
             value = getattr(instance, ModelsDict['YcToBp'][cell])
             if cell == 'Протокол' or cell == 'Удостоверение':
                 value = value.name
-                sheet.cell(row=row, column=col, value=value)
+            sheet.cell(row=row, column=col, value=value)
         row += 1
     book.save(f'mediafiles/export/{filename}')
     file = Files.objects.get(name=filename)

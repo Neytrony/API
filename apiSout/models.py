@@ -38,17 +38,6 @@ class SoutFromAc(models.Model):
     employeeSNILS = models.CharField(max_length=255, null=True, blank=True, verbose_name='Снилс работника ')
     linkMapSout = models.CharField(max_length=255, null=True, blank=True, verbose_name='Ссылка на документ карта СОУТ')
     protocolAmount = models.CharField(max_length=255, null=True, blank=True, verbose_name='Кол-во протоколов к карте')
-    protocolNum = models.CharField(max_length=255, null=True, blank=True, verbose_name='Номер протокола')
-    protocolDate = models.CharField(max_length=255, null=True, blank=True, verbose_name='дата протокола')
-    protocolType = models.CharField(max_length=255, null=True, blank=True, verbose_name='тип протокола (тяжесть и т.п.)')
-    measurementDate = models.CharField(max_length=255, null=True, blank=True, verbose_name='Дата измерений')
-    conclusion = models.CharField(max_length=255, null=True, blank=True, verbose_name='Заключение')
-    engineerFIO = models.CharField(max_length=255, null=True, blank=True, verbose_name='Фио инженера')
-    engineerPosition = models.CharField(max_length=255, null=True, blank=True, verbose_name='Должность инженера')
-    expertFIO = models.CharField(max_length=255, null=True, blank=True, verbose_name='Фио эксперта')
-    expertPosition = models.CharField(max_length=255, null=True, blank=True, verbose_name='Должность эксперта')
-    registerExpertsNum = models.CharField(max_length=255, null=True, blank=True, verbose_name='Номер в реестре экспертов')
-    linkProtocol = models.CharField(max_length=255, null=True, blank=True, verbose_name='Ссылка на протокол')
     cardCost = models.CharField(max_length=255, null=True, blank=True, verbose_name='Стоимость карты')
 
     def serializer(self):
@@ -89,17 +78,7 @@ class SoutFromAc(models.Model):
             'employeeSNILS': self.employeeSNILS,
             'linkMapSout': self.linkMapSout,
             'protocolAmount': self.protocolAmount,
-            'protocolNum': self.protocolNum,
-            'protocolDate': self.protocolDate,
-            'protocolType': self.protocolType,
-            'measurementDate': self.measurementDate,
-            'conclusion': self.conclusion,
-            'engineerFIO': self.engineerFIO,
-            'engineerPosition': self.engineerPosition,
-            'expertFIO': self.expertFIO,
-            'expertPosition': self.expertPosition,
-            'registerExpertsNum': self.registerExpertsNum,
-            'linkProtocol': self.linkProtocol,
+            'protocols': [obj.serializer() for obj in self.protocols.all()],
             'cardCost': self.cardCost,
         }
 
@@ -195,6 +174,7 @@ class SoutToAc(models.Model):
 
 
 class Employee(models.Model):
+    id = models.AutoField(unique=True, primary_key=True, verbose_name='id')
     TN = models.CharField(max_length=255, null=True, blank=True, verbose_name='ТН сотрудника')
     SNILS = models.CharField(max_length=255, null=True, blank=True, verbose_name='Снилс сотрудника')
     surname = models.CharField(max_length=255, null=True, blank=True, verbose_name='Фамилия сотрудника')
@@ -203,7 +183,7 @@ class Employee(models.Model):
     birthDate = models.CharField(max_length=255, null=True, blank=True, verbose_name='Дата рождения сотрудника')
     gender = models.CharField(max_length=255, null=True, blank=True, verbose_name='Пол сотрудника')
     invalid = models.CharField(max_length=255, null=True, blank=True, verbose_name='Инвалид')
-    soutToAc = models.ForeignKey(SoutToAc, related_name='employees', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Сотрудник')
+    soutToAc = models.ForeignKey(SoutToAc, related_name='employees', on_delete=models.CASCADE, null=True, blank=True, verbose_name='soutToAc')
 
     def __str__(self):
         return f'{self.SNILS}; {self.surname} {self.name} {self.secondName}'
@@ -227,9 +207,10 @@ class Employee(models.Model):
 
 
 class RM(models.Model):
+    id = models.AutoField(unique=True, primary_key=True, verbose_name='id')
     amountRM = models.CharField(max_length=255, null=True, blank=True, verbose_name='Количество аналогичных Р/М')
     numberRM = models.CharField(max_length=255, null=True, blank=True, verbose_name='номер Р/М')
-    soutToAc = models.ForeignKey(SoutToAc, related_name='RMs', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Р/М')
+    soutToAc = models.ForeignKey(SoutToAc, related_name='RMs', on_delete=models.CASCADE, null=True, blank=True, verbose_name='soutToAc')
 
     def __str__(self):
         return f'{self.amountRM}; {self.numberRM}'
@@ -247,9 +228,10 @@ class RM(models.Model):
 
 
 class CommissionMember(models.Model):
+    id = models.AutoField(unique=True, primary_key=True, verbose_name='id')
     FIO = models.CharField(max_length=255, null=True, blank=True, verbose_name='Фио члена комиссии')
     position = models.CharField(max_length=255, null=True, blank=True, verbose_name='Должность члена комиссии')
-    soutToAc = models.ForeignKey(SoutToAc, related_name='commissionMembers', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Член комиссии')
+    soutToAc = models.ForeignKey(SoutToAc, related_name='commissionMembers', on_delete=models.CASCADE, null=True, blank=True, verbose_name='soutToAc')
 
     def __str__(self):
         return f'{self.FIO}; {self.position}'
@@ -267,10 +249,11 @@ class CommissionMember(models.Model):
 
 
 class ResultMapSOUT(models.Model):
+    id = models.AutoField(unique=True, primary_key=True, verbose_name='id')
     numberSOUT = models.CharField(max_length=255, null=True, blank=True, verbose_name='Номер прошлой карты СОУТ')
     agreementDate = models.CharField(max_length=255, null=True, blank=True, verbose_name='Дата утверждения отчета прошлой СОУТ')
     workingConditionClass = models.CharField(max_length=255, null=True, blank=True, verbose_name='Класс условий труда прошлой СОУТ')
-    soutToAc = models.ForeignKey(SoutToAc, related_name='earlierSOUT', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Результат прошлой СОУТ')
+    soutToAc = models.ForeignKey(SoutToAc, related_name='earlierSOUT', on_delete=models.CASCADE, null=True, blank=True, verbose_name='soutToAc')
 
     def __str__(self):
         return f'{self.numberSOUT}; {self.agreementDate}'
@@ -290,9 +273,10 @@ class ResultMapSOUT(models.Model):
 
 
 class BadFactor(models.Model):
+    id = models.AutoField(unique=True, primary_key=True, verbose_name='id')
     badFactor = models.CharField(max_length=255, null=True, blank=True, verbose_name='Вредные фактор прошлой СОУТ')
     factorConditionClass = models.CharField(max_length=255, null=True, blank=True, verbose_name='Класс условий фактора')
-    resultMapSOUT = models.ForeignKey(ResultMapSOUT, related_name='badFactors', on_delete=models.CASCADE, null=True, blank=True, verbose_name='Вредный фактор')
+    resultMapSOUT = models.ForeignKey(ResultMapSOUT, related_name='badFactors', on_delete=models.CASCADE, null=True, blank=True, verbose_name='resultMapSOUT')
 
     def __str__(self):
         return f'{self.badFactor}; {self.factorConditionClass}'
@@ -307,3 +291,44 @@ class BadFactor(models.Model):
         unique_together = [["badFactor", "resultMapSOUT"]]
         verbose_name = 'Вредный фактор'
         verbose_name_plural = 'Вредные факторы'
+
+
+class Protocol(models.Model):
+    id = models.AutoField(unique=True, primary_key=True, verbose_name='id')
+    protocolNum = models.CharField(max_length=255, null=True, blank=True, verbose_name='Номер протокола')
+    protocolDate = models.CharField(max_length=255, null=True, blank=True, verbose_name='дата протокола')
+    protocolType = models.CharField(max_length=255, null=True, blank=True, verbose_name='тип протокола (тяжесть и т.п.)')
+    measurementDate = models.CharField(max_length=255, null=True, blank=True, verbose_name='Дата измерений')
+    conclusion = models.CharField(max_length=255, null=True, blank=True, verbose_name='Заключение')
+    engineerFIO = models.CharField(max_length=255, null=True, blank=True, verbose_name='Фио инженера')
+    engineerPosition = models.CharField(max_length=255, null=True, blank=True, verbose_name='Должность инженера')
+    expertFIO = models.CharField(max_length=255, null=True, blank=True, verbose_name='Фио эксперта')
+    expertPosition = models.CharField(max_length=255, null=True, blank=True, verbose_name='Должность эксперта')
+    registerExpertsNum = models.CharField(max_length=255, null=True, blank=True, verbose_name='Номер в реестре экспертов')
+    linkProtocol = models.CharField(max_length=255, null=True, blank=True, verbose_name='Ссылка на протокол')
+    cardCost = models.CharField(max_length=255, null=True, blank=True, verbose_name='Стоимость карты')
+    soutFromAc = models.ForeignKey(SoutFromAc, related_name='protocols', on_delete=models.CASCADE, null=True, blank=True, verbose_name='soutFromAc')
+
+    def __str__(self):
+        return f'{self.protocolNum} {self.protocolDate}'
+
+    def serializer(self):
+        return {
+            'protocolNum': self.protocolNum,
+            'protocolDate': self.protocolDate,
+            'protocolType': self.protocolType,
+            'measurementDate': self.measurementDate,
+            'conclusion': self.conclusion,
+            'engineerFIO': self.engineerFIO,
+            'engineerPosition': self.engineerPosition,
+            'expertFIO': self.expertFIO,
+            'expertPosition': self.expertPosition,
+            'registerExpertsNum': self.registerExpertsNum,
+            'linkProtocol': self.linkProtocol,
+        }
+
+    class Meta:
+        unique_together = [["protocolNum", "soutFromAc"]]
+        verbose_name = 'Протокол'
+        verbose_name_plural = 'Протоколы'
+

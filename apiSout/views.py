@@ -101,6 +101,7 @@ class SoutToAcAPIView(views.APIView):
         result = []
         for validated_data in data:
             result.append(model_obj_create_or_update(SoutToAc, ['cardNum'], validated_data))
+            SoutFromAc.objects.update_or_create(cardNum=validated_data['cardNum'])
         return Response([res.serializer() for res in result])
 
 
