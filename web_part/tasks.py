@@ -4,29 +4,29 @@ import time
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
 from djangoProject.celery import app
-from api.models import YcToBp
+from api.models import YcToBp, BpToYc
 from apiSout.models import SoutToAc, SoutFromAc, Employee, CommissionMember, RM, ResultMapSOUT, BadFactor
 from web_part.models import Files
 
 from django.db.models import Count
-from django.db.models.fields.reverse_related import ManyToOneRel
+from django.db.models.fields.reverse_related import ManyToOneRel, OneToOneRel
 from django.db.models.fields.related import OneToOneField
 
 
 def create_model_dict(Model):
     list1 = list()
     list2 = list()
-    [list1.append(i.name) if type(i) not in [ManyToOneRel, OneToOneField] else list2.append(i.name) for i in Model._meta.get_fields()]
+    [list1.append(i.name) if type(i) not in [ManyToOneRel, OneToOneField, OneToOneRel] else list2.append(i.name) for i in Model._meta.get_fields()]
     result = {Model._meta.get_field(item).verbose_name: item for item in list1}
     if Model.__name__ in ['SoutToAc']:
         result['Relations'] = {item: item for item in list2}
     return result
 
 
-# YcToBpDict = {
+# BpToYcDict = {
 #     'id': 'id',
 #     'Тип операции': 'operationType',
-#     'Табельный номер': 'tabNum',
+#     'Табельный номер': 'idYL',
 #     'ФИО': 'FIO',
 #     'Код обучения': 'learnCode',
 #     'Стоимость курса': 'courseCost',
@@ -50,6 +50,7 @@ def create_model_dict(Model):
 
 ModelsDict = {
     'YcToBp': create_model_dict(YcToBp),
+    'BpToYc': create_model_dict(BpToYc),
     'SoutToAc': create_model_dict(SoutToAc),
     'SoutfromAc': create_model_dict(SoutFromAc),
     'Employee': create_model_dict(Employee),
@@ -108,10 +109,10 @@ def xlsx_update(filename):
 
 
 @app.task
-def get_info_csv(filename):
+def get_info_csv(filename, model):
     time.sleep(2)
-    instances = YcToBp.objects.all()
-    a_dict = ModelsDict['YcToBp']
+    instances = model.objects.all()
+    a_dict = ModelsDict[model.__name__]
     # extra_models = a_dict.get('Relations').keys()
     add_dict = a_dict.copy()
     with open(f'mediafiles/export/{filename}', 'w', newline='', encoding='Windows-1251') as f:
@@ -141,7 +142,7 @@ def get_info_csv(filename):
         for instance in instances:
             line = dict()
             for dictKey in list(dictKeys):
-                line[dictKey] = getattr(instance, ModelsDict['YcToBp'][dictKey])
+                line[dictKey] = getattr(instance, ModelsDict[model.__name__][dictKey])
             if a_dict.get('Relations'):
                 pass
             writer.writerow(line)
@@ -151,14 +152,14 @@ def get_info_csv(filename):
 
 
 @app.task
-def get_info_xlsx(filename):
+def get_info_xlsx(filename, model):
     time.sleep(2)
-    instances = YcToBp.objects.all()
-    YcToBpKeys = ModelsDict['YcToBp'].keys()
+    instances = model.objects.all()
+    ModelKeys = ModelsDict[model.__name__].keys()
     book = Workbook()
     sheet = book.active
     headers = dict()
-    for key in YcToBpKeys:
+    for key in ModelKeys:
         if key != 'Relations':
             headers[key] = key
         else:
@@ -173,8 +174,8 @@ def get_info_xlsx(filename):
     for instance in instances:
         for col in range(1, max_column):
             cell = sheet.cell(row=1, column=col).value
-            value = getattr(instance, ModelsDict['YcToBp'][cell])
-            if cell == 'Протокол' or cell == 'Удостоверение':
+            value = getattr(instance, ModelsDict[model.__name__][cell])
+            if cell == 'Протокол' or cell == 'Удостоверение' or cell == 'foto':
                 value = value.name
             sheet.cell(row=row, column=col, value=value)
         row += 1
